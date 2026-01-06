@@ -1,0 +1,65 @@
+# 新泰汽車傳動軸 - 專業維修預約管理系統 🚗💨
+
+[![Next.js](https://img.shields.io/badge/Next.js-15-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
+[![Prisma](https://img.shields.io/badge/Prisma-ORM-2D3748?style=for-the-badge&logo=prisma)](https://www.prisma.io/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4-38B2AC?style=for-the-badge&logo=tailwind-css)](https://tailwindcss.com/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-DB-336791?style=for-the-badge&logo=postgresql)](https://www.postgresql.org/)
+
+這是一個為 **新泰汽車傳動軸** 量身打造的專業預約與客製化管理系統。結合現代化的網頁技術，提供客戶流暢的預約體驗，並為管理者提供強大的後台管理功能。
+
+## ✨ 核心功能
+
+### 🌐 前端入口 (Public)
+- **動態展示**：自動同步後台設定的商家資訊（名稱、電話、地址）。
+- **服務說明**：專業的傳動軸維修與平衡服務介紹。
+- **線上預約**：整合 Google 登入，提供直觀的時段選擇器。
+- **保固查詢**：客戶可透過電話與車牌快速查詢維修保固狀態。
+
+### ⚙️ 管理後台 (Admin Panel)
+- **預約看板**：即時掌握每日預約狀況，支援狀態變更（確認、完成、取消）。
+- **系統設定**：動態修改商家基本資料、預約時段限制。
+- **維修項目管理**：自定義服務名稱、預計工時與價格。
+- **客戶/車輛管理**：建立完整的客戶維修歷史資料庫。
+- **保固管理**：一鍵生成保固記錄，自動計算到期日。
+
+## 🛠 技術棧
+
+- **框架**: Next.js 15 (App Router / Turbopack)
+- **資料庫**: PostgreSQL (透過 Prisma ORM)
+- **身分驗證**: Auth.js (NextAuth v5) + Google Provider
+- **UI 框架**: Tailwind CSS + Shadcn/UI (部分自定義)
+- **圖示庫**: Lucide React
+- **日期處理**: date-fns
+
+## 🚀 快速開始
+
+### 環境變數設定
+建立 `.env` 檔案並填入以下內容：
+```env
+DATABASE_URL="your_postgresql_url"
+AUTH_SECRET="your_nextauth_secret"
+GOOGLE_CLIENT_ID="your_google_id"
+GOOGLE_CLIENT_SECRET="your_google_secret"
+```
+
+### 安裝與運行
+1. 安裝依賴：
+   ```bash
+   npm install
+   ```
+2. 資料庫遷移與產出：
+   ```bash
+   npx prisma db push
+   npx prisma generate
+   ```
+3. 啟動開發伺服器：
+   ```bash
+   npm run dev
+   ```
+
+## 📄 專案文件
+- [系統規格書 (SYSTEM_SPEC.md)](./SYSTEM_SPEC.md)
+- [系統分析與設計文件 (SYSTEM_DESIGN.md)](./SYSTEM_DESIGN.md)
+
+---
+© 2026 新泰汽車傳動軸. 專業、誠信、精密平衡.
