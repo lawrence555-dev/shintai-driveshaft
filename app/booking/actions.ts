@@ -17,6 +17,18 @@ export async function getServices() {
     });
 }
 
+// Get dates that have special overrides (Holidays or Makeup days)
+export async function getDateExceptions(startDate: Date, endDate: Date) {
+    return await prisma.holiday.findMany({
+        where: {
+            date: {
+                gte: startDate,
+                lte: endDate,
+            },
+        },
+    });
+}
+
 // Get booked slots for a specific date range
 export async function getBookedSlots(startDate: Date, endDate: Date) {
     const appointments = await prisma.appointment.findMany({
@@ -31,7 +43,41 @@ export async function getBookedSlots(startDate: Date, endDate: Date) {
             date: true,
         },
     });
-    return appointments.map((a: { date: Date }) => a.date.toISOString());
+
+    const blockedSlots = await prisma.blockedSlot.findMany({
+        where: {
+            date: {
+                gte: startDate,
+                lte: endDate,
+            },
+        },
+        select: {
+            date: true,
+        },
+    });
+
+    const holidayData = await prisma.holiday.findMany({
+        where: {
+            date: {
+                gte: startDate,
+                lte: endDate,
+            },
+        },
+    });
+
+    const booked = [
+        ...appointments.map((a: { date: Date }) => a.date.toISOString()),
+        ...blockedSlots.map((b: { date: Date }) => b.date.toISOString()),
+    ];
+
+    return {
+        booked,
+        exceptions: holidayData.map(h => ({
+            date: h.date.toISOString(),
+            isHoliday: h.isHoliday,
+            name: h.name
+        }))
+    };
 }
 
 export async function createAppointment(formData: {
@@ -149,8 +195,54 @@ export async function createAppointment(formData: {
         },
     });
 
-    revalidatePath("/booking");
-    revalidatePath("/admin");
     revalidatePath("/admin/customers");
     return appointment;
+}
+
+export async function getUserBookings() {
+    const session = await auth();
+    if (!session?.user?.id) return [];
+
+    const now = new Date();
+
+    return await prisma.appointment.findMany({
+        where: {
+            userId: session.user.id,
+            status: { in: ["PENDING", "CONFIRMED"] },
+            date: { gte: now }
+        },
+        include: {
+            service: true
+        },
+        orderBy: {
+            date: "asc"
+        }
+    });
+}
+
+export async function cancelAppointment(id: string) {
+    const session = await auth();
+    if (!session?.user?.id) throw new Error("Unauthorized");
+
+    const appointment = await prisma.appointment.findUnique({
+        where: { id },
+    });
+
+    if (!appointment || appointment.userId !== session.user.id) {
+        throw new Error("找不到該預約或權限不足");
+    }
+
+    if (appointment.status === "COMPLETED" || appointment.status === "CANCELLED") {
+        throw new Error("無法取消已完成或已取消的預約");
+    }
+
+    const updated = await prisma.appointment.update({
+        where: { id },
+        data: { status: "CANCELLED" },
+    });
+
+    revalidatePath("/booking");
+    revalidatePath("/my-bookings");
+    revalidatePath("/admin");
+    return updated;
 }

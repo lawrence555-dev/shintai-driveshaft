@@ -5,10 +5,10 @@ import Navbar from "@/components/Navbar";
 import { useSearchParams } from "next/navigation";
 import { format, isSameDay, startOfDay, endOfDay, addDays } from "date-fns";
 import { zhTW } from "date-fns/locale";
-import { BOOKING_SLOTS, getAvailableDates, TimeSlot, getSlotDateTime, isSlotPassed } from "@/lib/booking-utils";
+import { BOOKING_SLOTS, getAvailableDates, TimeSlot, getSlotDateTime, isSlotPassed, isDateDisabled } from "@/lib/booking-utils";
 import { validateLicensePlate, validatePhone } from "@/lib/validation";
 import { Select, SelectTrigger, SelectContent, SelectItem } from "@/components/ui/Select";
-import { Calendar, Clock, Car, ChevronRight, CheckCircle2, AlertCircle, Phone, Hash, Wrench } from "lucide-react";
+import { Calendar, Clock, Car, ChevronRight, CheckCircle2, AlertCircle, Phone, Hash, Wrench, Info } from "lucide-react";
 import { createAppointment, getServices, getBookedSlots } from "./actions";
 
 export default function BookingPage() {
@@ -25,10 +25,11 @@ export default function BookingPage() {
     const [isSuccess, setIsSuccess] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [bookedSlots, setBookedSlots] = useState<string[]>([]);
+    const [dateExceptions, setDateExceptions] = useState<any[]>([]);
     const [plateError, setPlateError] = useState<string | null>(null);
     const [phoneError, setPhoneError] = useState<string | null>(null);
 
-    const availableDates = getAvailableDates(14);
+    const availableDates = getAvailableDates(30);
 
     useEffect(() => {
         const fetchServices = async () => {
@@ -61,9 +62,10 @@ export default function BookingPage() {
             if (availableDates.length === 0) return;
             try {
                 const start = startOfDay(availableDates[0]);
-                const end = endOfDay(addDays(availableDates[availableDates.length - 1], 1));
-                const slots = await getBookedSlots(start, end);
-                setBookedSlots(slots);
+                const end = endOfDay(availableDates[availableDates.length - 1]);
+                const { booked, exceptions } = await getBookedSlots(start, end);
+                setBookedSlots(booked);
+                setDateExceptions(exceptions);
             } catch (err) {
                 console.error("Failed to fetch booked slots:", err);
             }
@@ -156,23 +158,46 @@ export default function BookingPage() {
                                         選擇日期
                                     </h3>
                                     <div className="grid grid-cols-2 gap-3">
-                                        {availableDates.map((date) => (
-                                            <button
-                                                key={date.toISOString()}
-                                                onClick={() => {
-                                                    setSelectedDate(date);
-                                                    setSelectedSlot(null); // Reset slot when date changes
-                                                }}
-                                                className={`p-4 rounded-xl border-2 transition-all text-left ${selectedDate && isSameDay(selectedDate, date)
-                                                    ? 'border-brand-orange bg-orange-50'
-                                                    : 'border-gray-100 hover:border-gray-300'
-                                                    }`}
-                                            >
-                                                <div className="text-xs text-gray-400">{format(date, "yyyy/MM")}</div>
-                                                <div className="font-bold">{format(date, "dd")}</div>
-                                                <div className="text-sm">{format(date, "eee", { locale: zhTW })}</div>
-                                            </button>
-                                        ))}
+                                        {availableDates.map((date) => {
+                                            const disabled = isDateDisabled(date, dateExceptions);
+                                            const exception = dateExceptions.find(e =>
+                                                isSameDay(new Date(e.date), date)
+                                            );
+
+                                            return (
+                                                <button
+                                                    key={date.toISOString()}
+                                                    disabled={disabled}
+                                                    onClick={() => {
+                                                        setSelectedDate(date);
+                                                        setSelectedSlot(null);
+                                                    }}
+                                                    className={`p-4 rounded-xl border-2 transition-all text-left relative overflow-hidden ${disabled
+                                                        ? "bg-gray-50 border-gray-100 text-gray-300 cursor-not-allowed opacity-60"
+                                                        : selectedDate && isSameDay(selectedDate, date)
+                                                            ? "border-brand-orange bg-orange-50 text-brand-orange shadow-inner"
+                                                            : "border-gray-50 hover:border-gray-200 text-brand-gray"
+                                                        }`}
+                                                >
+                                                    <div className="flex justify-between items-start mb-1">
+                                                        <div className="text-xs opacity-60 uppercase font-bold">
+                                                            {format(date, "eee", { locale: zhTW })}
+                                                        </div>
+                                                        {exception && (
+                                                            <div className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${exception.isHoliday
+                                                                    ? "bg-red-100 text-red-600"
+                                                                    : "bg-blue-100 text-blue-600"
+                                                                }`}>
+                                                                {exception.name}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                    <div className="text-xl font-black">
+                                                        {format(date, "MM/dd")}
+                                                    </div>
+                                                </button>
+                                            );
+                                        })}
                                     </div>
                                 </div>
 

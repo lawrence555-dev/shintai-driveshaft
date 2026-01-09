@@ -5,30 +5,45 @@ import Google from "next-auth/providers/google";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
     adapter: PrismaAdapter(prisma),
-    secret: process.env.NEXTAUTH_SECRET || process.env.AUTH_SECRET,
+    secret: process.env.AUTH_SECRET,
+    trustHost: true,
     providers: [
         Google({
             clientId: process.env.GOOGLE_CLIENT_ID,
             clientSecret: process.env.GOOGLE_CLIENT_SECRET,
         }),
     ],
+    pages: {
+        signIn: "/",
+    },
+    session: { strategy: "jwt" },
     callbacks: {
         authorized({ auth, request: { nextUrl } }) {
             const isLoggedIn = !!auth?.user;
-            const isBookingPage = nextUrl.pathname.startsWith("/booking");
+            const isAdminPage = nextUrl.pathname.startsWith("/admin");
 
-            if (isBookingPage) {
+            if (isAdminPage) {
                 if (isLoggedIn) return true;
-                return false; // Redirect to login
+                return false;
             }
             return true;
         },
-        async session({ session, user }) {
-            if (session.user) {
+        async jwt({ token, user, trigger, session }) {
+            if (user) {
                 // @ts-ignore
-                session.user.id = user.id;
+                token.id = user.id;
                 // @ts-ignore
-                session.user.role = user.role;
+                token.role = user.role;
+            }
+            // Update token if role changed in DB (optional, but good for consistency)
+            return token;
+        },
+        async session({ session, token }) {
+            if (token && session.user) {
+                // @ts-ignore
+                session.user.id = token.id;
+                // @ts-ignore
+                session.user.role = token.role;
             }
             return session;
         },

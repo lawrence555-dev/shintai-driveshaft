@@ -12,21 +12,13 @@ export const BOOKING_SLOTS: TimeSlot[] = [
     { label: "下午時段 (B)", startTime: "15:30", endTime: "17:30" },
 ];
 
-// Get available dates (includes today if not Sunday)
-export function getAvailableDates(daysCount: number = 14) {
+// Get available dates (basic range)
+export function getAvailableDates(daysCount: number = 21) {
     const dates = [];
     const today = startOfDay(new Date());
 
-    // Include today if it's not Sunday
-    if (!isSunday(today)) {
-        dates.push(today);
-    }
-
-    for (let i = 1; i <= daysCount; i++) {
-        const date = addDays(today, i);
-        if (!isSunday(date)) {
-            dates.push(date);
-        }
+    for (let i = 0; i <= daysCount; i++) {
+        dates.push(addDays(today, i));
     }
     return dates;
 }
@@ -55,7 +47,22 @@ export function isSlotPassed(date: Date, slot: TimeSlot): boolean {
 }
 
 
-// Check if a date is Sunday (for disabling in UI)
-export function isDateDisabled(date: Date): boolean {
-    return isSunday(date);
+// Check if a date is Sunday (Default behavior, will be overridden by holiday exceptions)
+export function isDateDisabled(date: Date, exceptions?: any[]): boolean {
+    const isSun = isSunday(date);
+
+    if (exceptions) {
+        const dateString = date.toISOString().split('T')[0];
+        const exception = exceptions.find(e => {
+            const eDate = new Date(e.date).toISOString().split('T')[0];
+            return eDate === dateString;
+        });
+
+        if (exception) {
+            // If it's in exceptions, return its isHoliday status
+            return exception.isHoliday;
+        }
+    }
+
+    return isSun;
 }

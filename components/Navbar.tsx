@@ -19,7 +19,7 @@ export default function Navbar() {
     const handleBooking = (e: React.MouseEvent) => {
         e.preventDefault();
         if (!session) {
-            signIn("google", { callbackUrl: "/booking" });
+            signIn("google", { redirectTo: "/booking" });
         } else {
             router.push("/booking");
         }
@@ -34,6 +34,13 @@ export default function Navbar() {
             </div>
 
             <div className="flex items-center space-x-4 md:space-x-6">
+                <Link
+                    href="/booking/my-bookings"
+                    className="text-gray-300 hover:text-brand-orange text-sm font-bold transition-all hidden lg:block"
+                >
+                    我的預約
+                </Link>
+
                 <button
                     onClick={() => setIsWarrantyDialogOpen(true)}
                     className="border-2 border-brand-orange text-brand-orange hover:bg-brand-orange hover:text-white px-4 py-2 rounded font-semibold transition-all active:scale-95 hidden sm:block"
@@ -70,7 +77,7 @@ export default function Navbar() {
                         </div>
                     ) : (
                         <button
-                            onClick={() => signIn("google")}
+                            onClick={() => signIn("google", { redirectTo: "/" })}
                             className="flex items-center space-x-2 text-gray-300 hover:text-white transition-colors"
                         >
                             <UserCircle size={24} />

@@ -12,7 +12,9 @@ import {
     ChevronRight,
     ChevronLeft,
     Menu,
-    Users
+    Users,
+    Clock,
+    CalendarDays
 } from "lucide-react";
 
 import { useSettings } from "@/hooks/useSettings";
@@ -20,6 +22,8 @@ import { useSettings } from "@/hooks/useSettings";
 const sidebarItems = [
     { name: "預約總覽", href: "/admin", icon: LayoutDashboard },
     { name: "客戶管理", href: "/admin/customers", icon: Users },
+    { name: "時段管理", href: "/admin/blocked-slots", icon: Clock },
+    { name: "國假管理", href: "/admin/holidays", icon: CalendarDays },
     { name: "維修項目管理", href: "/admin/services", icon: Wrench },
     { name: "保固看板", href: "/admin/warranty", icon: ShieldCheck },
     { name: "系統設定", href: "/admin/settings", icon: Settings },

@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -13,43 +7,36 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum Role {
-  ADMIN
-  USER
-}
-
 model User {
-  id            String          @id @default(cuid())
+  id            String        @id @default(cuid())
   name          String?
-  email         String?         @unique
+  email         String?       @unique
   emailVerified DateTime?
   image         String?
-  role          Role            @default(USER)
+  role          Role          @default(USER)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
   accounts      Account[]
-  sessions      Session[]
   appointments  Appointment[]
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt
+  sessions      Session[]
 }
 
 model Account {
-  id                String  @id @default(cuid())
+  id                String   @id @default(cuid())
   userId            String
   type              String
   provider          String
   providerAccountId String
-  refresh_token     String? @db.Text
-  access_token      String? @db.Text
+  refresh_token     String?
+  access_token      String?
   expires_at        Int?
   token_type        String?
   scope             String?
-  id_token          String? @db.Text
+  id_token          String?
   session_state     String?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
 }
@@ -59,10 +46,9 @@ model Session {
   sessionToken String   @unique
   userId       String
   expires      DateTime
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 }
 
 model VerificationToken {
@@ -74,74 +60,100 @@ model VerificationToken {
 }
 
 model Service {
-  id           String        @id @default(cuid())
-  name         String
-  duration     Int           @default(120) // estimated duration in minutes
-  price        Int           @default(0)
-  warrantyMonths Int           @default(0) // 預設保固月數
-  isActive      Boolean       @default(true)
-  appointments   Appointment[]
+  id             String        @id @default(cuid())
+  name           String
+  duration       Int           @default(120)
+  price          Int           @default(0)
+  warrantyMonths Int           @default(0)
   createdAt      DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+  updatedAt      DateTime      @updatedAt
+  isActive       Boolean       @default(true)
+  appointments   Appointment[]
 }
 
 model Customer {
   id          String    @id @default(cuid())
-  name        String?   // 客戶姓名
-  phoneNumber String    @unique // 電話（主要識別）
-  notes       String?   // 備註
-  vehicles    Vehicle[] // 一對多：可擁有多台車
+  name        String?
+  phoneNumber String    @unique
+  notes       String?
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+  vehicles    Vehicle[]
 
   @@index([phoneNumber])
 }
 
 model Vehicle {
   id           String        @id @default(cuid())
-  licensePlate String        @unique // 車牌唯一
-  carModel     String?       // 車型
+  licensePlate String        @unique
+  carModel     String?
   customerId   String
-  customer     Customer      @relation(fields: [customerId], references: [id])
-  appointments Appointment[]
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
+  appointments Appointment[]
+  customer     Customer      @relation(fields: [customerId], references: [id])
 
   @@index([customerId])
   @@index([licensePlate])
 }
 
 model Appointment {
-  id              String    @id @default(cuid())
-  date            DateTime
-  carModel        String    // 冗餘保留，方便查詢
-  licensePlate    String?   // 冗餘保留，方便查詢
-  phoneNumber     String?   // 冗餘保留，方便查詢
-  status          String    @default("PENDING") // PENDING, CONFIRMED, CANCELLED, COMPLETED
-  actualDuration  Int?      // 實際工時 (分鐘)
-  warrantyUntil   DateTime? // 保固到期日
-  userId          String
-  user            User      @relation(fields: [userId], references: [id])
-  serviceId       String
-  service         Service   @relation(fields: [serviceId], references: [id])
-  vehicleId       String?   // 關聯車輛
-  vehicle         Vehicle?  @relation(fields: [vehicleId], references: [id])
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  id             String    @id @default(cuid())
+  date           DateTime
+  carModel       String
+  licensePlate   String?
+  phoneNumber    String?
+  status         String    @default("PENDING")
+  actualDuration Int?
+  warrantyUntil  DateTime?
+  userId         String
+  serviceId      String
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  vehicleId      String?
+  service        Service   @relation(fields: [serviceId], references: [id])
+  user           User      @relation(fields: [userId], references: [id])
+  vehicle        Vehicle?  @relation(fields: [vehicleId], references: [id])
 
   @@index([vehicleId])
   @@index([licensePlate])
   @@index([phoneNumber])
 }
 
-// Settings - 系統設定（只會有一筆）
 model Settings {
-  id              String    @id @default("default")
-  businessName    String    @default("新泰汽車傳動軸")
-  phoneNumber     String    @default("0979293225")
-  address         String    @default("525 彰化縣竹塘鄉光明路 525 號竹田巷 17 之 8 號")
-  slotDuration    Int       @default(120) // 預約時段長度（分鐘）
-  lineNotifyToken String?   // LINE Notify Token
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  id              String   @id @default("default")
+  businessName    String   @default("新泰汽車傳動軸")
+  phoneNumber     String   @default("0979293225")
+  address         String   @default("525 彰化縣竹塘鄉光明路 525 號竹田巷 17 之 8 號")
+  slotDuration    Int      @default(120)
+  lineNotifyToken String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model BlockedSlot {
+  id        String   @id @default(cuid())
+  date      DateTime
+  reason    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([date])
+}
+
+
+enum Role {
+  ADMIN
+  USER
+}
+
+model Holiday {
+  id        String   @id @default(cuid())
+  date      DateTime @unique
+  name      String
+  isHoliday Boolean  @default(true) // false if it's a makeup workday
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([date])
 }

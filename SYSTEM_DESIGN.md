@@ -29,6 +29,7 @@ graph TD
 - **User (1) <-> Appointment (N)**: 紀錄預約發起人。
 - **Customer (1) <-> Vehicle (N)**: 一位客戶可擁有多台車輛記錄。
 - **Service (1) <-> Appointment (N)**: 每筆預約歸屬於某個維修項目。
+- **Holiday**: 記錄國定假日與補班日，供預約系統邏輯判定。
 
 ### 2.3 關鍵技術實作 (Key Implementation)
 
@@ -40,6 +41,12 @@ graph TD
 
 #### 2.3.3 保固驗證 (Warranty Verification)
 為保護隱私，保固查詢採用 `CarPlate` + `PhoneNumber` 的雙重驗證。查詢結果僅回傳該車輛的最新有效保固記錄。
+
+#### 2.3.4 假日同步邏輯 (Holiday Sync)
+串接政府行政機關日曆 API，系統僅儲存「例外」日期（平日放假、假日補班）。前端排程日曆會優先判斷該日期是否為 Holiday。
+
+#### 2.3.5 狀態管理優化 (Status Tracking)
+導入正式的 `CANCELLED` 狀態。當管理者取消預約時，系統會釋放資料庫時段索引，確保預約看板的「總計」與「已完成」統計數據精確。
 
 ## 3. 系統規格 (Technical Specifications)
 
@@ -60,4 +67,4 @@ graph TD
 - **Input Validation**: 使用驗證函式過濾車牌格式與電話號碼。
 
 ---
-最後更新時間：2026-01-06
+最後更新時間：2026-01-09

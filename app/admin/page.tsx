@@ -8,7 +8,7 @@ import interactionPlugin from "@fullcalendar/interaction";
 import zhTwLocale from "@fullcalendar/core/locales/zh-tw";
 import AppointmentDetailModal from "@/components/admin/AppointmentDetailModal";
 import CompleteAppointmentModal from "@/components/admin/CompleteAppointmentModal";
-import { Loader2, Calendar as CalendarIcon, Search, Filter, Phone, Hash, Clock, CheckCircle, Package, AlertCircle, ChevronLeft, ChevronRight } from "lucide-react";
+import { Loader2, Calendar as CalendarIcon, Search, Filter, Phone, Hash, Clock, CheckCircle, Package, AlertCircle, ChevronLeft, ChevronRight, X } from "lucide-react";
 import { format } from "date-fns";
 import { zhTW } from "date-fns/locale";
 
@@ -32,6 +32,7 @@ export default function AdminDashboard() {
             case "PENDING": return "#EAB308"; // Yellow-500
             case "CONFIRMED": return "#2563EB"; // Blue-600
             case "COMPLETED": return "#10B981"; // Green-500
+            case "CANCELLED": return "#EF4444"; // Red-500
             default: return "#2D2D2D";
         }
     };
@@ -121,11 +122,12 @@ export default function AdminDashboard() {
             </header>
 
             {/* Stats Cards / Filters */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
                 {[
                     { id: "PENDING", label: "待確認", color: "bg-yellow-500", icon: AlertCircle },
                     { id: "CONFIRMED", label: "已確認", color: "bg-blue-600", icon: CheckCircle },
                     { id: "COMPLETED", label: "已完成", color: "bg-green-500", icon: Package },
+                    { id: "CANCELLED", label: "已取消", color: "bg-red-500", icon: X },
                     { id: null, label: "總計", color: "bg-brand-gray", icon: CalendarIcon },
                 ].map((stat) => (
                     <button
@@ -138,12 +140,12 @@ export default function AdminDashboard() {
                     >
                         <div>
                             <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">{stat.label}</p>
-                            <p className="text-4xl font-black text-brand-gray tracking-tighter">
+                            <p className="text-3xl font-black text-brand-gray tracking-tighter">
                                 {stat.id ? appointments.filter(e => e.extendedProps.status === stat.id).length : appointments.length}
                             </p>
                         </div>
-                        <div className={`w-14 h-14 ${stat.color} rounded-2xl flex items-center justify-center text-white shadow-lg group-hover:rotate-12 transition-transform`}>
-                            <stat.icon size={28} />
+                        <div className={`w-12 h-12 ${stat.color} rounded-2xl flex items-center justify-center text-white shadow-lg group-hover:rotate-12 transition-transform`}>
+                            <stat.icon size={24} />
                         </div>
                     </button>
                 ))}
@@ -287,11 +289,13 @@ export default function AdminDashboard() {
                                                 <div>
                                                     <div className="flex items-center gap-2 mb-1">
                                                         <span className={`w-3 h-3 rounded-full ${app.extendedProps.status === "PENDING" ? "bg-yellow-500" :
-                                                            app.extendedProps.status === "CONFIRMED" ? "bg-blue-600" : "bg-green-500"
+                                                            app.extendedProps.status === "CONFIRMED" ? "bg-blue-600" :
+                                                                app.extendedProps.status === "CANCELLED" ? "bg-red-500" : "bg-green-500"
                                                             }`}></span>
                                                         <span className="text-xs font-black text-gray-400 uppercase tracking-widest">
                                                             {app.extendedProps.status === "PENDING" ? "待確認" :
-                                                                app.extendedProps.status === "CONFIRMED" ? "已確認" : "已完成"}
+                                                                app.extendedProps.status === "CONFIRMED" ? "已確認" :
+                                                                    app.extendedProps.status === "CANCELLED" ? "已取消" : "已完成"}
                                                         </span>
                                                     </div>
                                                     <p className="text-xl font-black text-brand-gray tracking-tight">{app.extendedProps.carModel}</p>

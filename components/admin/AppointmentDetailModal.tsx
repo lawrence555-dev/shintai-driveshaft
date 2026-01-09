@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { X, Calendar, Clock, User, Car, Wrench, CheckCircle, Package } from "lucide-react";
+import { X, Calendar, Clock, User, Car, Wrench, CheckCircle, Package, AlertTriangle } from "lucide-react";
+import CancelAppointmentModal from "./CancelAppointmentModal";
 import { format } from "date-fns";
 import { zhTW } from "date-fns/locale";
 
@@ -19,6 +20,7 @@ export default function AppointmentDetailModal({
     onStatusUpdate,
 }: AppointmentDetailModalProps) {
     const [loading, setLoading] = useState(false);
+    const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
 
     if (!isOpen || !appointment) return null;
 
@@ -47,6 +49,7 @@ export default function AppointmentDetailModal({
             case "PENDING": return "bg-yellow-100 text-yellow-800 border-yellow-200";
             case "CONFIRMED": return "bg-blue-100 text-blue-800 border-blue-200";
             case "COMPLETED": return "bg-green-100 text-green-800 border-green-200";
+            case "CANCELLED": return "bg-red-100 text-red-800 border-red-200";
             default: return "bg-gray-100 text-gray-800 border-gray-200";
         }
     };
@@ -56,6 +59,7 @@ export default function AppointmentDetailModal({
             case "PENDING": return "待確認";
             case "CONFIRMED": return "已確認";
             case "COMPLETED": return "已完成";
+            case "CANCELLED": return "已取消";
             default: return status;
         }
     };
@@ -142,9 +146,26 @@ export default function AppointmentDetailModal({
                                 標記為完工
                             </button>
                         )}
+                        {(appointment.status === "PENDING" || appointment.status === "CONFIRMED") && (
+                            <button
+                                disabled={loading}
+                                onClick={() => setIsCancelModalOpen(true)}
+                                className="px-6 bg-white hover:bg-red-50 text-red-600 border-2 border-red-100 hover:border-red-200 p-4 rounded-2xl font-black text-lg transition-all flex items-center justify-center gap-2"
+                            >
+                                <AlertTriangle size={24} />
+                                取消預約
+                            </button>
+                        )}
                     </div>
                 </div>
             </div>
+
+            <CancelAppointmentModal
+                isOpen={isCancelModalOpen}
+                onClose={() => setIsCancelModalOpen(false)}
+                onConfirm={() => updateStatus("CANCELLED")}
+                loading={loading}
+            />
         </div>
     );
 }
