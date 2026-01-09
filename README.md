@@ -61,6 +61,7 @@ GOOGLE_CLIENT_SECRET="your_google_secret"
 ## 📄 專案文件
 - [系統規格書 (SYSTEM_SPEC.md)](./SYSTEM_SPEC.md)
 - [系統分析與設計文件 (SYSTEM_DESIGN.md)](./SYSTEM_DESIGN.md)
+- [使用者操作手冊 (USER_MANUAL.md)](./USER_MANUAL.md)
 
 ---
 © 2026 新泰汽車傳動軸. 專業、誠信、精密平衡.
