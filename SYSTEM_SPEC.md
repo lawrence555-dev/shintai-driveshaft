@@ -1,5 +1,12 @@
 # 新泰汽車傳動軸 - 專案規格書 (V1.3)
 
+## 📋 目錄
+- [1. 商家核心資訊 (Business Profile)](#1-商家核心資訊-business-profile)
+- [2. UI/UX 視覺與內容規劃](#2-uiux-視覺與內容規劃)
+- [3. 系統核心邏輯 (System Logic)](#3-系統核心邏輯-system-logic)
+- [4. 資料庫架構 (Schema Overview)](#4-資料庫架構-schema-overview)
+- [5. 擴充建議 (Future Roadmap)](#5-擴充建議-future-roadmap)
+
 ## 1. 商家核心資訊 (Business Profile)
 - **名稱**: {動態讀取} (預設：新泰汽車傳動軸)
 - **地址**: {動態讀取} (預設：525 彰化縣竹塘鄉光明路 525 號竹田巷 17 之 8 號)
