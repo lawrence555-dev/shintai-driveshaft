@@ -50,13 +50,13 @@ graph TD
 採用 **Single-Row Table** 模式。系統啟動時若偵測無設定，自動根據 `Prisma` 模型預設值建立 `id: "default"` 的記錄。前端透過 `useSettings` 自定義 Hook 搭配客戶端快取，確保效能與同步。
 
 #### 2.3.2 預約邏輯 (Booking Flow)
-系統採用 `date-fns` 進行伺服器與客戶端的時間同步處理。預約時段根據 `Settings` 表中的 `slotDuration` 動態切換顯示與遮蔽，並自動過濾已預約與過期時段。
+系統採用 `date-fns` 進行伺服器與客戶端的時間同步處理。預約介面改為 **月曆格式 (Monthly View)**，支援跨月份瀏覽。點擊日期後會彈出 **時段選擇視窗 (Slot Modal)**，根據 `Settings` 表中的 `slotDuration` 動態切換顯示與遮蔽，並自動過濾已預約與過期時段。
 
 #### 2.3.3 保固驗證 (Warranty Verification)
 為保護隱私，保固查詢採用 `CarPlate` + `PhoneNumber` 的雙重驗證。查詢結果僅回傳該車輛的最新有效保固記錄。
 
-#### 2.3.4 假日同步邏輯 (Holiday Sync)
-串接政府行政機關日曆 API，系統僅儲存「例外」日期（平日放假、假日補班）。前端排程日曆會優先判斷該日期是否為 Holiday。
+#### 2.3.4 假日管理與覆蓋 (Holiday Management & Override)
+串接政府行政機關日曆 API 獲取基礎資料，並結合管理者 **手動覆蓋 (Manual Override)** 機制。系統優先判斷資料庫中是否存在特定日期的規則，若無則參考預設週休邏輯。這使得「假日加班營業」或「平日排定店休」成為可能。
 
 #### 2.3.5 狀態管理優化 (Status Tracking)
 導入正式的 `CANCELLED` 狀態。當管理者取消預約時，系統會釋放資料庫時段索引，確保預約看板的「總計」與「已完成」統計數據精確。

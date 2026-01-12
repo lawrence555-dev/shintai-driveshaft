@@ -52,6 +52,7 @@ export async function syncHolidays(year?: number) {
                     const isMakeupDay = !day.isHoliday && isWeekend;
 
                     if (isSpecialHoliday || isWeekdayHoliday || isMakeupDay) {
+                        // @ts-ignore
                         await prisma.holiday.upsert({
                             where: { date },
                             update: {
@@ -88,6 +89,7 @@ export async function getHolidays() {
         const currentYear = new Date().getFullYear();
         const startDate = new Date(currentYear - 1, 11, 30);
 
+        // @ts-ignore
         const data = await prisma.holiday.findMany({
             orderBy: { date: "asc" },
             where: {
@@ -99,6 +101,68 @@ export async function getHolidays() {
         return { success: true, data };
     } catch (err: any) {
         console.error("getHolidays Error:", err);
+        return { success: false, error: err.message };
+    }
+}
+
+export async function addManualHoliday(date: Date, name: string, isHoliday: boolean) {
+    try {
+        const session = await auth();
+        // @ts-ignore
+        if (session?.user?.role !== "ADMIN") return { success: false, error: "Unauthorized" };
+
+        // @ts-ignore
+        const result = await prisma.holiday.upsert({
+            where: { date },
+            update: { name, isHoliday },
+            create: { date, name, isHoliday }
+        });
+
+        revalidatePath("/admin/holidays");
+        revalidatePath("/booking");
+        return { success: true, data: result };
+    } catch (err: any) {
+        return { success: false, error: err.message };
+    }
+}
+
+export async function toggleHolidayStatus(id: string) {
+    try {
+        const session = await auth();
+        // @ts-ignore
+        if (session?.user?.role !== "ADMIN") return { success: false, error: "Unauthorized" };
+
+        // @ts-ignore
+        const current = await prisma.holiday.findUnique({ where: { id } });
+        if (!current) return { success: false, error: "Not found" };
+
+        // @ts-ignore
+        const result = await prisma.holiday.update({
+            where: { id },
+            data: { isHoliday: !current.isHoliday }
+        });
+
+        revalidatePath("/admin/holidays");
+        revalidatePath("/booking");
+        return { success: true, data: result };
+    } catch (err: any) {
+        return { success: false, error: err.message };
+    }
+}
+
+export async function deleteHoliday(id: string) {
+    try {
+        const session = await auth();
+        // @ts-ignore
+        if (session?.user?.role !== "ADMIN") return { success: false, error: "Unauthorized" };
+
+        // @ts-ignore
+        await prisma.holiday.delete({ where: { id } });
+
+        revalidatePath("/admin/holidays");
+        revalidatePath("/booking");
+        return { success: true };
+    } catch (err: any) {
         return { success: false, error: err.message };
     }
 }

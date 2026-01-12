@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { format } from "date-fns";
 import { zhTW } from "date-fns/locale";
-import { syncHolidays, getHolidays } from "./actions";
+import { syncHolidays, getHolidays, toggleHolidayStatus, deleteHoliday, addManualHoliday } from "./actions";
 import { Calendar, RefreshCw, Check, AlertCircle, Trash2, Plus, Info } from "lucide-react";
 import { toast } from "react-hot-toast";
 
@@ -11,6 +11,9 @@ export default function AdminHolidaysPage() {
     const [holidays, setHolidays] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isSyncing, setIsSyncing] = useState(false);
+    const [isAdding, setIsAdding] = useState(false);
+    const [newDate, setNewDate] = useState("");
+    const [newName, setNewName] = useState("");
 
     const fetchHolidays = async () => {
         setIsLoading(true);
@@ -49,6 +52,54 @@ export default function AdminHolidaysPage() {
         }
     };
 
+    const handleToggle = async (id: string) => {
+        try {
+            const result = await toggleHolidayStatus(id);
+            if (result.success) {
+                toast.success("狀態已變更");
+                fetchHolidays();
+            } else {
+                toast.error("變更失敗: " + result.error);
+            }
+        } catch (err: any) {
+            toast.error("錯誤: " + err.message);
+        }
+    };
+
+    const handleDelete = async (id: string) => {
+        if (!confirm("確定要刪除此筆記錄嗎？")) return;
+        try {
+            const result = await deleteHoliday(id);
+            if (result.success) {
+                toast.success("已刪除");
+                fetchHolidays();
+            } else {
+                toast.error("刪除失敗: " + result.error);
+            }
+        } catch (err: any) {
+            toast.error("錯誤: " + err.message);
+        }
+    };
+
+    const handleAddManual = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!newDate || !newName) return;
+        try {
+            const result = await addManualHoliday(new Date(newDate), newName, true);
+            if (result.success) {
+                toast.success("已新增手動記錄");
+                setIsAdding(false);
+                setNewDate("");
+                setNewName("");
+                fetchHolidays();
+            } else {
+                toast.error("新增失敗: " + result.error);
+            }
+        } catch (err: any) {
+            toast.error("錯誤: " + err.message);
+        }
+    };
+
     return (
         <div className="p-6 max-w-4xl mx-auto">
             <div className="flex justify-between items-center mb-8">
@@ -61,14 +112,23 @@ export default function AdminHolidaysPage() {
                         自動同步政府公告之公務機關辦公日曆表，確保預約系統正確排班。
                     </p>
                 </div>
-                <button
-                    onClick={handleSync}
-                    disabled={isSyncing}
-                    className="bg-brand-orange text-white px-4 py-2 rounded-xl font-bold flex items-center gap-2 disabled:opacity-50 transition-all active:scale-95"
-                >
-                    <RefreshCw className={isSyncing ? "animate-spin" : ""} size={18} />
-                    {isSyncing ? "同步中..." : "同步獲取最新假日"}
-                </button>
+                <div className="flex gap-3">
+                    <button
+                        onClick={() => setIsAdding(true)}
+                        className="bg-brand-gray text-white px-4 py-2 rounded-xl font-bold flex items-center gap-2 hover:bg-black transition-all"
+                    >
+                        <Plus size={18} />
+                        手動新增
+                    </button>
+                    <button
+                        onClick={handleSync}
+                        disabled={isSyncing}
+                        className="bg-brand-orange text-white px-4 py-2 rounded-xl font-bold flex items-center gap-2 disabled:opacity-50 transition-all active:scale-95"
+                    >
+                        <RefreshCw className={isSyncing ? "animate-spin" : ""} size={18} />
+                        {isSyncing ? "同步中..." : "同步最新假日"}
+                    </button>
+                </div>
             </div>
 
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
@@ -104,21 +164,22 @@ export default function AdminHolidaysPage() {
                                         {h.name}
                                     </td>
                                     <td className="px-6 py-4">
-                                        {h.isHoliday ? (
-                                            <span className="bg-red-50 text-red-600 text-[10px] px-2 py-1 rounded-full font-bold">
-                                                不開放預約 (假日)
-                                            </span>
-                                        ) : (
-                                            <span className="bg-blue-50 text-blue-600 text-[10px] px-2 py-1 rounded-full font-bold">
-                                                開放預約 (補班日)
-                                            </span>
-                                        )}
+                                        <button
+                                            onClick={() => handleToggle(h.id)}
+                                            className={`flex items-center gap-2 px-3 py-1.5 rounded-full font-black text-[10px] transition-all ${h.isHoliday
+                                                ? "bg-red-50 text-red-600 border border-red-100 hover:bg-red-100"
+                                                : "bg-blue-50 text-blue-600 border border-blue-100 hover:bg-blue-100"
+                                                }`}
+                                        >
+                                            <RefreshCw size={12} />
+                                            {h.isHoliday ? "店休 (不開放)" : "營業 (開放預約)"}
+                                        </button>
                                     </td>
                                     <td className="px-6 py-4 text-right">
                                         <button
+                                            onClick={() => handleDelete(h.id)}
                                             className="text-gray-300 hover:text-red-500 transition-colors"
-                                            title="手動排除 (尚未實作)"
-                                            disabled
+                                            title="刪除記錄"
                                         >
                                             <Trash2 size={18} />
                                         </button>
@@ -130,17 +191,64 @@ export default function AdminHolidaysPage() {
                 </table>
             </div>
 
-            <div className="mt-6 flex gap-4">
-                <div className="flex-1 p-4 bg-orange-50 border border-orange-100 rounded-xl flex gap-3 items-start">
-                    <Info className="text-brand-orange shrink-0 mt-0.5" size={18} />
-                    <div className="text-xs text-orange-800 leading-relaxed">
-                        <strong>運作說明：</strong><br />
-                        1. 系統會自動排除「假日」日期，使用者將無法點選。<br />
-                        2. 針對「補班日」（週六/週日），系統會自動將其變更為可預約時段。<br />
-                        3. 若有特定節日需要強制營業或關閉，可使用上方導覽列的「時段管理」進行手動調整。
+            {/* Manual Holiday Modal */}
+            {isAdding && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-brand-gray/80 backdrop-blur-sm" onClick={() => setIsAdding(false)}></div>
+                    <div className="relative bg-white w-full max-w-md rounded-[2.5rem] shadow-2xl p-8 border-4 border-white animate-in zoom-in duration-200">
+                        <div className="flex justify-between items-center mb-6">
+                            <h2 className="text-2xl font-black text-brand-gray uppercase tracking-tighter">新增自定義日期</h2>
+                            <button onClick={() => setIsAdding(false)} className="text-gray-400 hover:text-brand-gray transition-colors">
+                                <X size={24} />
+                            </button>
+                        </div>
+                        <form onSubmit={handleAddManual} className="space-y-6">
+                            <div>
+                                <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">日期</label>
+                                <input
+                                    required
+                                    type="date"
+                                    value={newDate}
+                                    onChange={(e) => setNewDate(e.target.value)}
+                                    className="w-full p-4 bg-gray-50 border-2 border-gray-100 rounded-2xl focus:border-brand-orange outline-none transition-all font-mono"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">名稱</label>
+                                <input
+                                    required
+                                    type="text"
+                                    placeholder="例如：店休、臨時加班"
+                                    value={newName}
+                                    onChange={(e) => setNewName(e.target.value)}
+                                    className="w-full p-4 bg-gray-50 border-2 border-gray-100 rounded-2xl focus:border-brand-orange outline-none transition-all"
+                                />
+                            </div>
+                            <div className="pt-4 flex gap-4">
+                                <button
+                                    type="button"
+                                    onClick={() => setIsAdding(false)}
+                                    className="flex-1 px-6 py-4 border-2 border-gray-100 rounded-2xl font-black text-brand-gray hover:bg-gray-50 transition-all"
+                                >
+                                    取消
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="flex-1 px-6 py-4 bg-brand-orange text-white rounded-2xl font-black shadow-lg shadow-orange-100 hover:scale-[1.02] transition-all"
+                                >
+                                    確定新增
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
-            </div>
+            )}
         </div>
     );
 }
+
+const X = ({ size }: { size: number }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M18 6 6 18M6 6l12 12" />
+    </svg>
+);

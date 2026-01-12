@@ -3,12 +3,12 @@
 import { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import { useSearchParams } from "next/navigation";
-import { format, isSameDay, startOfDay, endOfDay, addDays } from "date-fns";
+import { format, isSameDay, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, isSameMonth, addMonths, subMonths, isToday as isTodayFns, startOfDay, endOfDay } from "date-fns";
 import { zhTW } from "date-fns/locale";
 import { BOOKING_SLOTS, getAvailableDates, TimeSlot, getSlotDateTime, isSlotPassed, isDateDisabled } from "@/lib/booking-utils";
 import { validateLicensePlate, validatePhone } from "@/lib/validation";
 import { Select, SelectTrigger, SelectContent, SelectItem } from "@/components/ui/Select";
-import { Calendar, Clock, Car, ChevronRight, CheckCircle2, AlertCircle, Phone, Hash, Wrench, Info } from "lucide-react";
+import { Calendar, Clock, Car, ChevronRight, ChevronLeft, CheckCircle2, AlertCircle, Phone, Hash, Wrench, Info, X } from "lucide-react";
 import { createAppointment, getServices, getBookedSlots } from "./actions";
 
 export default function BookingPage() {
@@ -28,6 +28,8 @@ export default function BookingPage() {
     const [dateExceptions, setDateExceptions] = useState<any[]>([]);
     const [plateError, setPlateError] = useState<string | null>(null);
     const [phoneError, setPhoneError] = useState<string | null>(null);
+    const [currentMonth, setCurrentMonth] = useState(new Date());
+    const [isSlotModalOpen, setIsSlotModalOpen] = useState(false);
 
     const availableDates = getAvailableDates(30);
 
@@ -56,22 +58,21 @@ export default function BookingPage() {
         }
     }, [searchParams]);
 
-    // Fetch booked slots when dates are loaded
+    // Fetch booked slots and holidays when month changes
     useEffect(() => {
-        const fetchBookedSlots = async () => {
-            if (availableDates.length === 0) return;
+        const fetchMonthData = async () => {
             try {
-                const start = startOfDay(availableDates[0]);
-                const end = endOfDay(availableDates[availableDates.length - 1]);
-                const { booked, exceptions } = await getBookedSlots(start, end);
+                const monthStart = startOfMonth(currentMonth);
+                const monthEnd = endOfMonth(currentMonth);
+                const { booked, exceptions } = await getBookedSlots(monthStart, monthEnd);
                 setBookedSlots(booked);
                 setDateExceptions(exceptions);
             } catch (err) {
-                console.error("Failed to fetch booked slots:", err);
+                console.error("Failed to fetch month data:", err);
             }
         };
-        fetchBookedSlots();
-    }, []);
+        fetchMonthData();
+    }, [currentMonth]);
 
     const isSlotBooked = (date: Date, slot: TimeSlot) => {
         const slotDateTime = getSlotDateTime(date, slot);
@@ -151,106 +152,118 @@ export default function BookingPage() {
                     {step === 1 ? (
                         <div className="p-8">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-                                {/* Date Selection */}
-                                <div>
+                                {/* Monthly Calendar Selection */}
+                                <div className="md:col-span-2">
                                     <h3 className="flex items-center text-lg font-bold mb-6">
                                         <Calendar className="mr-2 text-brand-orange" size={20} />
                                         選擇日期
                                     </h3>
-                                    <div className="grid grid-cols-2 gap-3">
-                                        {availableDates.map((date) => {
-                                            const disabled = isDateDisabled(date, dateExceptions);
-                                            const exception = dateExceptions.find(e =>
-                                                isSameDay(new Date(e.date), date)
-                                            );
 
-                                            return (
-                                                <button
-                                                    key={date.toISOString()}
-                                                    disabled={disabled}
-                                                    onClick={() => {
-                                                        setSelectedDate(date);
-                                                        setSelectedSlot(null);
-                                                    }}
-                                                    className={`p-4 rounded-xl border-2 transition-all text-left relative overflow-hidden ${disabled
-                                                        ? "bg-gray-50 border-gray-100 text-gray-300 cursor-not-allowed opacity-60"
-                                                        : selectedDate && isSameDay(selectedDate, date)
-                                                            ? "border-brand-orange bg-orange-50 text-brand-orange shadow-inner"
-                                                            : "border-gray-50 hover:border-gray-200 text-brand-gray"
-                                                        }`}
-                                                >
-                                                    <div className="flex justify-between items-start mb-1">
-                                                        <div className="text-xs opacity-60 uppercase font-bold">
-                                                            {format(date, "eee", { locale: zhTW })}
-                                                        </div>
-                                                        {exception && (
-                                                            <div className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${exception.isHoliday
-                                                                    ? "bg-red-100 text-red-600"
-                                                                    : "bg-blue-100 text-blue-600"
-                                                                }`}>
-                                                                {exception.name}
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                    <div className="text-xl font-black">
-                                                        {format(date, "MM/dd")}
-                                                    </div>
-                                                </button>
-                                            );
-                                        })}
-                                    </div>
-                                </div>
+                                    <div className="bg-gray-50 rounded-2xl p-4 sm:p-6 border border-gray-100">
+                                        <div className="flex items-center justify-between mb-8 px-2">
+                                            <button
+                                                onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
+                                                className="p-2 hover:bg-white rounded-full transition-colors"
+                                            >
+                                                <ChevronLeft size={24} className="text-brand-gray" />
+                                            </button>
+                                            <h4 className="text-xl font-black text-brand-gray uppercase tracking-tighter">
+                                                {format(currentMonth, "yyyy MMMM", { locale: zhTW })}
+                                            </h4>
+                                            <button
+                                                onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
+                                                className="p-2 hover:bg-white rounded-full transition-colors"
+                                            >
+                                                <ChevronRight size={24} className="text-brand-gray" />
+                                            </button>
+                                        </div>
 
-                                {/* Time Selection */}
-                                <div>
-                                    <h3 className="flex items-center text-lg font-bold mb-6">
-                                        <Clock className="mr-2 text-brand-orange" size={20} />
-                                        選擇時段
-                                    </h3>
-                                    <div className="space-y-4">
-                                        {BOOKING_SLOTS.map((slot) => {
-                                            const booked = selectedDate ? isSlotBooked(selectedDate, slot) : false;
-                                            const passed = selectedDate ? isSlotPassed(selectedDate, slot) : false;
-                                            const isDisabled = booked || passed || !selectedDate;
+                                        <div className="grid grid-cols-7 gap-1 sm:gap-3">
+                                            {["日", "一", "二", "三", "四", "五", "六"].map((day) => (
+                                                <div key={day} className="text-center text-[10px] font-black text-gray-400 uppercase py-2">
+                                                    {day}
+                                                </div>
+                                            ))}
 
-                                            return (
-                                                <button
-                                                    key={slot.startTime}
-                                                    disabled={isDisabled}
-                                                    onClick={() => setSelectedSlot(slot)}
-                                                    className={`w-full p-4 rounded-xl border-2 transition-all flex justify-between items-center ${isDisabled
-                                                        ? 'border-gray-100 bg-gray-50 cursor-not-allowed opacity-60'
-                                                        : selectedSlot?.startTime === slot.startTime
-                                                            ? 'border-brand-orange bg-orange-50'
-                                                            : 'border-gray-100 hover:border-gray-300'
-                                                        }`}
-                                                >
-                                                    <div className="font-semibold">
-                                                        {slot.label}
-                                                        {booked && <span className="ml-2 text-xs text-red-500 font-bold">已預約</span>}
-                                                        {!booked && passed && <span className="ml-2 text-xs text-gray-400 font-bold">時段已過</span>}
-                                                    </div>
-                                                    <div className={`font-bold font-mono ${isDisabled ? 'text-gray-400' : 'text-brand-orange'}`}>
-                                                        {slot.startTime} - {slot.endTime}
-                                                    </div>
-                                                </button>
-                                            );
-                                        })}
-                                        <div className="mt-6 p-4 bg-gray-50 rounded-lg text-xs text-gray-500">
-                                            提示：週日休息不提供預約。每時段僅限一台車輛，確保施工品質。今日過時時段不提供預約。
+                                            {(() => {
+                                                const start = startOfWeek(startOfMonth(currentMonth));
+                                                const end = endOfWeek(endOfMonth(currentMonth));
+                                                const days = eachDayOfInterval({ start, end });
+
+                                                return days.map((date) => {
+                                                    const isCurrentMonth = isSameMonth(date, currentMonth);
+                                                    const disabled = !isCurrentMonth || isDateDisabled(date, dateExceptions) || (startOfDay(date) < startOfDay(new Date()));
+                                                    const isToday = isTodayFns(date);
+                                                    const isSelected = selectedDate && isSameDay(selectedDate, date);
+
+                                                    const exception = dateExceptions.find(e =>
+                                                        isSameDay(new Date(e.date), date)
+                                                    );
+
+                                                    return (
+                                                        <button
+                                                            key={date.toISOString()}
+                                                            disabled={disabled}
+                                                            onClick={() => {
+                                                                setSelectedDate(date);
+                                                                setSelectedSlot(null);
+                                                                setIsSlotModalOpen(true);
+                                                            }}
+                                                            className={`
+                                                                relative aspect-square sm:aspect-auto sm:h-24 p-2 rounded-2xl border-2 transition-all flex flex-col items-center justify-center
+                                                                ${!isCurrentMonth ? "opacity-0 pointer-events-none" : ""}
+                                                                ${disabled
+                                                                    ? "bg-gray-50/50 border-transparent text-gray-300 cursor-not-allowed"
+                                                                    : isSelected
+                                                                        ? "bg-brand-orange border-brand-orange text-white shadow-lg shadow-orange-100 scale-105 z-10"
+                                                                        : "bg-white border-white hover:border-brand-orange/30 text-brand-gray shadow-sm"
+                                                                }
+                                                                ${isToday && !isSelected ? "ring-2 ring-brand-orange ring-offset-2" : ""}
+                                                            `}
+                                                        >
+                                                            <span className="text-lg sm:text-2xl font-black tracking-tighter">
+                                                                {format(date, "d")}
+                                                            </span>
+
+                                                            {exception && (
+                                                                <span className={`
+                                                                    text-[9px] font-black px-1.5 py-0.5 rounded-full mt-1
+                                                                    ${exception.isHoliday
+                                                                        ? isSelected ? "bg-white/20 text-white" : "bg-red-50 text-red-600 border border-red-100"
+                                                                        : isSelected ? "bg-white/20 text-white" : "bg-blue-50 text-blue-600 border border-blue-100"
+                                                                    }
+                                                                `}>
+                                                                    {exception.isHoliday ? "休" : "補"}
+                                                                </span>
+                                                            )}
+
+                                                            {isSelected && !disabled && (
+                                                                <div className="absolute top-1 right-1">
+                                                                    <CheckCircle2 size={12} className="text-white" />
+                                                                </div>
+                                                            )}
+                                                        </button>
+                                                    );
+                                                });
+                                            })()}
+                                        </div>
+
+                                        <div className="mt-8 flex flex-wrap gap-4 px-2">
+                                            <div className="flex items-center gap-2">
+                                                <div className="w-3 h-3 rounded-full bg-red-100 border border-red-200"></div>
+                                                <span className="text-[10px] font-bold text-gray-500 uppercase">公休日</span>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <div className="w-3 h-3 rounded-full bg-blue-100 border border-blue-200"></div>
+                                                <span className="text-[10px] font-bold text-gray-500 uppercase">補班日</span>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <div className="w-3 h-3 rounded-full bg-white border-2 border-brand-orange ring-1 ring-brand-orange ring-offset-1"></div>
+                                                <span className="text-[10px] font-bold text-gray-500 uppercase">今日</span>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-
-                            <div className="mt-12 flex justify-end">
-                                <button
-                                    disabled={!selectedDate || !selectedSlot}
-                                    onClick={handleNextStep}
-                                    className="bg-brand-gray text-white px-8 py-3 rounded-lg font-bold flex items-center disabled:opacity-50 disabled:cursor-not-allowed hover:bg-black transition-all"
-                                >
-                                    下一步：填寫資訊 <ChevronRight size={20} className="ml-2" />
-                                </button>
                             </div>
                         </div>
                     ) : (
@@ -416,6 +429,83 @@ export default function BookingPage() {
                     )}
                 </div>
             </div>
-        </main>
+
+            {/* Time Slot Selection Modal */}
+            {
+                isSlotModalOpen && selectedDate && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 sm:p-0">
+                        <div className="absolute inset-0 bg-brand-gray/80 backdrop-blur-sm" onClick={() => setIsSlotModalOpen(false)}></div>
+                        <div className="relative bg-white w-full max-w-md rounded-[2.5rem] shadow-2xl border-4 border-white overflow-hidden animate-in fade-in zoom-in duration-300">
+                            <div className="bg-brand-gray p-8 text-white relative">
+                                <button onClick={() => setIsSlotModalOpen(false)} className="absolute top-8 right-8 text-white/50 hover:text-white transition-colors">
+                                    <X size={28} />
+                                </button>
+                                <h2 className="text-3xl font-black tracking-tighter uppercase mb-2">選擇預約時段</h2>
+                                <p className="text-brand-orange font-black flex items-center gap-2">
+                                    <Calendar size={18} />
+                                    {format(selectedDate, "yyyy/MM/dd (EEEE)", { locale: zhTW })}
+                                </p>
+                            </div>
+
+                            <div className="p-8 space-y-4">
+                                {BOOKING_SLOTS.map((slot) => {
+                                    const booked = isSlotBooked(selectedDate, slot);
+                                    const passed = isSlotPassed(selectedDate, slot);
+                                    const isDisabled = booked || passed;
+
+                                    return (
+                                        <button
+                                            key={slot.startTime}
+                                            disabled={isDisabled}
+                                            onClick={() => {
+                                                setSelectedSlot(slot);
+                                                setIsSlotModalOpen(false);
+                                                setStep(2);
+                                                window.scrollTo({ top: 0, behavior: 'smooth' });
+                                            }}
+                                            className={`w-full p-6 rounded-2xl border-4 transition-all flex justify-between items-center group ${isDisabled
+                                                ? 'border-gray-50 bg-gray-50 cursor-not-allowed opacity-40'
+                                                : 'border-gray-100 hover:border-brand-orange bg-white hover:scale-[1.02]'
+                                                }`}
+                                        >
+                                            <div>
+                                                <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-1 group-hover:text-brand-orange transition-colors">
+                                                    {slot.label}
+                                                </p>
+                                                <div className="flex items-center gap-2">
+                                                    <p className="text-2xl font-black text-brand-gray tracking-tighter">
+                                                        {slot.startTime}
+                                                    </p>
+                                                    <span className="text-gray-300">→</span>
+                                                    <p className="text-2xl font-black text-gray-400 tracking-tighter">
+                                                        {slot.endTime}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                {booked ? (
+                                                    <span className="bg-red-50 text-red-600 text-xs font-black px-3 py-1.5 rounded-full border border-red-100">已額滿</span>
+                                                ) : passed ? (
+                                                    <span className="bg-gray-100 text-gray-400 text-xs font-black px-3 py-1.5 rounded-full">已過時</span>
+                                                ) : (
+                                                    <ChevronRight size={28} className="text-gray-200 group-hover:text-brand-orange group-hover:translate-x-1 transition-all" />
+                                                )}
+                                            </div>
+                                        </button>
+                                    );
+                                })}
+
+                                <div className="mt-8 p-4 bg-brand-light-gray rounded-2xl flex gap-3 items-start">
+                                    <Info className="text-brand-orange shrink-0 mt-0.5" size={18} />
+                                    <p className="text-[11px] text-gray-500 font-bold leading-relaxed">
+                                        提示：每時段僅限一台車輛進場，由異音專家本人親自施工，確保精密平衡品質。若有緊急維修需求，請直接來電洽詢。
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )
+            }
+        </main >
     );
 }
