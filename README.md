@@ -65,6 +65,16 @@ GOOGLE_CLIENT_SECRET="your_google_secret"
    ```bash
    npm run dev
    ```
+### 部署至 Render (搭配 Zeabur DB)
+本專案採用的架構為：**Render (App)** + **Zeabur (PostgreSQL)**。
+
+1. 在 **Render** 點擊 `New +` -> `Blueprint`。
+2. 連結 GitHub 儲存庫。
+3. 設定環境變數：
+   - `DATABASE_URL`: 填入 Zeabur 提供的 PostgreSQL 連線字串。
+   - `AUTH_SECRET`: Render 會自動生成，或手動設定。
+   - `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET`: 填入 Google Console 憑證。
+4. 點擊 `Apply` 即可啟動自動化建置與部署。
 
 ## 📄 專案文件
 - [系統規格書 (SYSTEM_SPEC.md)](./SYSTEM_SPEC.md)
