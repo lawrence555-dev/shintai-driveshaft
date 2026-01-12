@@ -1,4 +1,5 @@
 "use client";
+export const dynamic = 'force-dynamic';
 
 import { useState, useEffect } from "react";
 import { getBlockedSlots, createBlockedSlot, deleteBlockedSlot } from "./actions";
@@ -147,10 +148,10 @@ export default function BlockedSlotsPage() {
                                             disabled={!!isAlreadyBlocked}
                                             onClick={() => setSelectedSlot(slot)}
                                             className={`w-full p-4 rounded-xl border-2 transition-all flex justify-between items-center ${isAlreadyBlocked
-                                                    ? 'bg-gray-50 border-gray-100 text-gray-300 cursor-not-allowed opacity-60'
-                                                    : selectedSlot?.startTime === slot.startTime
-                                                        ? 'border-brand-orange bg-orange-50 text-brand-orange shadow-inner'
-                                                        : 'border-gray-50 hover:border-gray-200 text-gray-400'
+                                                ? 'bg-gray-50 border-gray-100 text-gray-300 cursor-not-allowed opacity-60'
+                                                : selectedSlot?.startTime === slot.startTime
+                                                    ? 'border-brand-orange bg-orange-50 text-brand-orange shadow-inner'
+                                                    : 'border-gray-50 hover:border-gray-200 text-gray-400'
                                                 }`}
                                         >
                                             <div className="flex items-center gap-2">

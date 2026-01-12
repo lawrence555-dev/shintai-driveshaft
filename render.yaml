@@ -9,7 +9,7 @@ services:
       - key: NODE_VERSION
         value: 20
       - key: DATABASE_URL
-        fromConfigVar: DATABASE_URL
+        sync: false
       - key: AUTH_SECRET
         generateValue: true
       - key: GOOGLE_CLIENT_ID
