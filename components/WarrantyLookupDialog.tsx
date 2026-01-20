@@ -99,14 +99,13 @@ export default function WarrantyLookupDialog({ isOpen, onClose }: WarrantyLookup
         return (
             <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
                 {/* Summary Header */}
-                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl">
+                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100">
                     <div className="flex items-center gap-3">
                         <Car size={20} className="text-brand-orange" />
-                        <span className="font-bold text-brand-gray">{licensePlate}</span>
+                        <span className="font-mono font-black text-brand-gray tracking-tighter">{licensePlate}</span>
                     </div>
-                    <div className="text-sm font-bold text-gray-500">
-                        共 <span className="text-brand-orange">{results.length}</span> 筆紀錄，
-                        <span className="text-green-600">{activeCount}</span> 筆有效
+                    <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                        Found <span className="text-brand-orange font-mono">{results.length}</span> records
                     </div>
                 </div>
 
@@ -148,10 +147,10 @@ export default function WarrantyLookupDialog({ isOpen, onClose }: WarrantyLookup
                                     <div className="flex items-center gap-3">
                                         {record.isActive && (
                                             <div className="text-right">
-                                                <div className="text-xl font-black text-brand-orange">
+                                                <div className="text-xl font-mono font-black text-brand-orange leading-none mb-1">
                                                     {record.daysRemaining}
                                                 </div>
-                                                <div className="text-[10px] font-bold text-gray-400">剩餘天</div>
+                                                <div className="text-[10px] font-black text-gray-400 uppercase tracking-tighter">Days Left</div>
                                             </div>
                                         )}
                                         {isExpanded ? <ChevronUp size={18} className="text-gray-400" /> : <ChevronDown size={18} className="text-gray-400" />}
@@ -201,30 +200,31 @@ export default function WarrantyLookupDialog({ isOpen, onClose }: WarrantyLookup
                 {/* Contact Button */}
                 <a
                     href="tel:0979293225"
-                    className="w-full bg-brand-orange hover:bg-orange-600 text-white p-5 rounded-2xl font-black text-lg transition-all shadow-lg shadow-brand-orange/20 hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-3 group"
+                    className="group relative w-full bg-brand-orange text-white p-5 rounded-2xl font-black text-lg transition-all shadow-[0_15px_30px_-5px_rgba(255,107,0,0.4)] hover:shadow-[0_20px_40px_-8px_rgba(255,107,0,0.6)] hover:-translate-y-1 active:scale-95 flex items-center justify-center gap-3 overflow-hidden"
                 >
-                    <Phone size={20} className="group-hover:rotate-12 transition-transform" />
-                    聯絡師傅 (0979 293 225)
-                    <ExternalLink size={16} className="opacity-50" />
+                    <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-500 skew-x-[-20deg]"></div>
+                    <Phone size={20} className="relative z-10 group-hover:rotate-12 transition-transform" />
+                    <span className="relative z-10">聯絡師傅 (0979 293 225)</span>
+                    <ExternalLink size={16} className="relative z-10 opacity-50" />
                 </a>
 
-                <p className="text-[10px] text-center text-gray-400 font-bold leading-relaxed px-4">
-                    ※ 本系統僅供快速查詢，詳細保固條款請參閱實體保固卡或連繫本店。
+                <p className="text-[10px] text-center text-gray-400 font-bold leading-relaxed px-4 uppercase tracking-widest">
+                    ※ Please contact us for detailed warranty terms.
                 </p>
             </div>
         );
     };
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 md:p-10 pointer-events-none">
             {/* Backdrop */}
             <div
-                className="absolute inset-0 bg-brand-gray/80 backdrop-blur-sm animate-in fade-in duration-300"
+                className="absolute inset-0 bg-brand-gray/80 backdrop-blur-md animate-in fade-in duration-500 pointer-events-auto"
                 onClick={onClose}
             />
 
             {/* Dialog Content */}
-            <div className="relative bg-white w-full max-w-lg rounded-[2.5rem] shadow-2xl overflow-hidden border-4 border-white animate-in zoom-in slide-in-from-bottom-8 duration-500 flex flex-col max-h-[90vh]">
+            <div className="relative bg-white w-full max-w-lg rounded-[2rem] shadow-[0_0_100px_rgba(0,0,0,0.4)] overflow-hidden border-4 border-white animate-in zoom-in fade-in duration-500 flex flex-col max-h-[85vh] pointer-events-auto my-auto self-center">
                 {/* Close Button */}
                 <button
                     onClick={onClose}
@@ -259,7 +259,7 @@ export default function WarrantyLookupDialog({ isOpen, onClose }: WarrantyLookup
                                         required
                                         type="text"
                                         placeholder="ABC-1234"
-                                        className="w-full bg-gray-50 border-2 border-transparent rounded-xl pl-12 pr-4 py-4 font-bold text-brand-gray focus:border-brand-orange focus:bg-white transition-all outline-none"
+                                        className="w-full bg-gray-50 border-2 border-transparent rounded-xl pl-12 pr-4 py-4 font-mono font-black text-brand-gray tracking-widest focus:border-brand-orange focus:bg-white transition-all outline-none placeholder:font-sans placeholder:tracking-normal"
                                         value={licensePlate}
                                         onChange={(e) => setLicensePlate(e.target.value.toUpperCase())}
                                     />
@@ -284,9 +284,10 @@ export default function WarrantyLookupDialog({ isOpen, onClose }: WarrantyLookup
                             <button
                                 disabled={loading}
                                 type="submit"
-                                className="w-full bg-brand-orange hover:bg-orange-600 text-white py-4 rounded-xl font-black text-lg transition-all shadow-lg shadow-brand-orange/20 flex items-center justify-center gap-3 active:scale-[0.98]"
+                                className="group relative w-full bg-brand-orange text-white py-5 rounded-xl font-black text-lg transition-all shadow-[0_15px_30px_-5px_rgba(255,107,0,0.3)] hover:shadow-[0_20px_40px_-8px_rgba(255,107,0,0.5)] flex items-center justify-center gap-3 active:scale-[0.98] overflow-hidden"
                             >
-                                {loading ? <Loader2 className="animate-spin" /> : "立即查詢"}
+                                <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-500 skew-x-[-20deg]"></div>
+                                {loading ? <Loader2 className="animate-spin relative z-10" /> : <span className="relative z-10">立即查詢 Query Now</span>}
                             </button>
 
                             {error && (
