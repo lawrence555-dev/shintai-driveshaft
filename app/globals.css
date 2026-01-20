@@ -1,23 +1,26 @@
+@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Fira+Sans:wght@300;400;500;600;700&display=swap');
 @import "tailwindcss";
 
 @theme {
-  --color-brand-gray: #121212;
+  --color-brand-gray: #0F172A;
   --color-brand-orange: #FF6B00;
-  --color-brand-light-gray: #F8F9FA;
+  --color-brand-light-gray: #F8FAFC;
   --color-brand-white: #FFFFFF;
+  --font-base: "Fira Sans", sans-serif;
+  --font-mono: "Fira Code", monospace;
 }
 
 :root {
-  --background: #FFFFFF;
-  --foreground: #121212;
+  --background: #F8FAFC;
+  --foreground: #020617;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-inter), sans-serif;
+  font-family: var(--font-base);
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  -moz-osx-float-smoothing: grayscale;
 }
 
 /* Radix UI Select Animations */

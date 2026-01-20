@@ -114,38 +114,41 @@ export default function AdminDashboard() {
 
     return (
         <div className="space-y-12">
-            <header>
-                <h1 className="text-5xl font-black text-brand-gray tracking-tighter uppercase mb-4">
-                    工作看板 <span className="text-brand-orange">Task Board</span>
+            <header className="space-y-2">
+                <h1 className="text-5xl md:text-7xl font-black text-brand-gray tracking-tighter uppercase leading-none">
+                    <span className="text-brand-orange">SYSTEM</span> CONTROL
                 </h1>
-                <p className="text-xl text-gray-500 font-bold">查看預約排程並管理維修進度。</p>
+                <p className="text-xl text-gray-400 font-bold font-mono tracking-tight uppercase">Driveshaft Management Command Center</p>
             </header>
 
             {/* Stats Cards / Filters */}
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
                 {[
-                    { id: "PENDING", label: "待確認", color: "bg-yellow-500", icon: AlertCircle },
-                    { id: "CONFIRMED", label: "已確認", color: "bg-blue-600", icon: CheckCircle },
-                    { id: "COMPLETED", label: "已完成", color: "bg-green-500", icon: Package },
-                    { id: "CANCELLED", label: "已取消", color: "bg-red-500", icon: X },
-                    { id: null, label: "總計", color: "bg-brand-gray", icon: CalendarIcon },
+                    { id: "PENDING", label: "Pending", color: "bg-yellow-500", icon: AlertCircle },
+                    { id: "CONFIRMED", label: "Confirmed", color: "bg-blue-600", icon: CheckCircle },
+                    { id: "COMPLETED", label: "Completed", color: "bg-green-500", icon: Package },
+                    { id: "CANCELLED", label: "Cancelled", color: "bg-red-500", icon: X },
+                    { id: null, label: "Total", color: "bg-brand-gray", icon: CalendarIcon },
                 ].map((stat) => (
                     <button
                         key={stat.label}
                         onClick={() => setStatusFilter(stat.id)}
-                        className={`p-8 rounded-[2rem] shadow-xl border-4 transition-all flex items-center justify-between group ${statusFilter === stat.id
-                            ? "bg-white border-brand-orange scale-105"
-                            : "bg-white border-white hover:border-gray-200"
+                        className={`p-6 rounded-2xl shadow-lg border transition-all flex items-center justify-between group relative overflow-hidden ${statusFilter === stat.id
+                            ? "bg-white border-brand-orange ring-1 ring-brand-orange/20"
+                            : "bg-white border-gray-100 hover:border-gray-200"
                             }`}
                     >
+                        {statusFilter === stat.id && (
+                            <div className="absolute top-0 right-0 w-2 h-full bg-brand-orange animate-pulse"></div>
+                        )}
                         <div>
-                            <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">{stat.label}</p>
-                            <p className="text-3xl font-black text-brand-gray tracking-tighter">
-                                {stat.id ? appointments.filter(e => e.extendedProps.status === stat.id).length : appointments.length}
+                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1 font-mono">{stat.label}</p>
+                            <p className="text-4xl font-black text-brand-gray tracking-tighter font-mono">
+                                {String(stat.id ? appointments.filter(e => e.extendedProps.status === stat.id).length : appointments.length).padStart(2, '0')}
                             </p>
                         </div>
-                        <div className={`w-12 h-12 ${stat.color} rounded-2xl flex items-center justify-center text-white shadow-lg group-hover:rotate-12 transition-transform`}>
-                            <stat.icon size={24} />
+                        <div className={`w-10 h-10 ${stat.color} rounded-xl flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform`}>
+                            <stat.icon size={20} />
                         </div>
                     </button>
                 ))}
@@ -154,56 +157,58 @@ export default function AdminDashboard() {
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-10 items-start">
                 {/* Left: Calendar (2/3) */}
                 <div className="xl:col-span-2 flex flex-col sticky top-32">
-                    <div className="bg-white p-8 rounded-[3rem] shadow-2xl border-4 border-white ring-1 ring-gray-100 flex-1 relative overflow-hidden flex flex-col">
-                        <h2 className="text-2xl font-black text-brand-gray mb-6 flex items-center gap-3">
-                            <div className="w-2 h-8 bg-brand-orange rounded-full"></div>
-                            預約排程日曆
+                    <div className="bg-white p-8 rounded-[2rem] shadow-2xl border border-gray-100 flex-1 relative overflow-hidden flex flex-col">
+                        <div className="absolute top-0 right-0 p-4">
+                            <div className="w-2 h-2 bg-brand-orange rounded-full animate-ping"></div>
+                        </div>
+                        <h2 className="text-xl font-black text-brand-gray mb-8 flex items-center gap-3 font-mono uppercase tracking-tighter">
+                            <span className="text-brand-orange">//</span> SCHEDULING_MATRIX
                         </h2>
-                        <div className="flex-1 min-h-[750px] flex flex-col">
+                        <div className="flex-1 min-h-[700px] flex flex-col">
                             {/* Custom Header */}
-                            <div className="flex flex-wrap sm:flex-nowrap justify-between items-center w-full mb-6 gap-4">
+                            <div className="flex flex-wrap sm:flex-nowrap justify-between items-center w-full mb-8 gap-4 border-b border-gray-50 pb-6">
                                 {/* Navigation (Left) */}
-                                <div className="flex items-center gap-1 flex-nowrap shrink-0">
+                                <div className="flex items-center gap-2 flex-nowrap shrink-0">
                                     <button
                                         onClick={() => calendarRef.current?.getApi().prev()}
-                                        className="h-9 w-9 flex items-center justify-center bg-brand-gray text-white rounded-lg hover:bg-brand-orange transition-all active:scale-95 shadow-md"
+                                        className="h-10 w-10 flex items-center justify-center bg-brand-gray/5 text-brand-gray rounded-xl hover:bg-brand-orange hover:text-white transition-all active:scale-95"
                                     >
-                                        <ChevronLeft size={18} />
+                                        <ChevronLeft size={20} />
                                     </button>
                                     <button
                                         onClick={() => calendarRef.current?.getApi().next()}
-                                        className="h-9 w-9 flex items-center justify-center bg-brand-gray text-white rounded-lg hover:bg-brand-orange transition-all active:scale-95 shadow-md"
+                                        className="h-10 w-10 flex items-center justify-center bg-brand-gray/5 text-brand-gray rounded-xl hover:bg-brand-orange hover:text-white transition-all active:scale-95"
                                     >
-                                        <ChevronRight size={18} />
+                                        <ChevronRight size={20} />
                                     </button>
                                     <button
                                         onClick={() => calendarRef.current?.getApi().today()}
-                                        className="h-9 px-3 flex items-center justify-center bg-brand-gray text-white rounded-lg font-bold text-xs hover:bg-brand-orange transition-all active:scale-95 shadow-md whitespace-nowrap"
+                                        className="h-10 px-4 flex items-center justify-center bg-brand-gray text-white rounded-xl font-black text-xs hover:bg-brand-orange transition-all active:scale-95 uppercase tracking-widest font-mono"
                                     >
-                                        今天
+                                        Today
                                     </button>
                                 </div>
 
                                 {/* Title (Center) */}
                                 <div className="flex-1 text-center min-w-0">
-                                    <h3 className="text-sm sm:text-base font-bold text-brand-gray tracking-tight whitespace-nowrap">
+                                    <h3 className="text-xl font-black text-brand-gray tracking-tighter font-mono uppercase">
                                         {calendarTitle}
                                     </h3>
                                 </div>
 
                                 {/* Views (Right) */}
-                                <div className="flex items-center gap-1 flex-nowrap shrink-0 justify-end">
+                                <div className="flex items-center gap-2 flex-nowrap shrink-0 justify-end">
                                     {[
-                                        { id: "dayGridMonth", label: "月" },
-                                        { id: "timeGridWeek", label: "週" },
-                                        { id: "timeGridDay", label: "天" },
+                                        { id: "dayGridMonth", label: "MONTH" },
+                                        { id: "timeGridWeek", label: "WEEK" },
+                                        { id: "timeGridDay", label: "DAY" },
                                     ].map((view) => (
                                         <button
                                             key={view.id}
                                             onClick={() => calendarRef.current?.getApi().changeView(view.id)}
-                                            className={`h-9 px-3 rounded-lg text-xs font-bold transition-all shadow-md active:scale-95 whitespace-nowrap ${currentView === view.id
-                                                ? "bg-brand-orange text-white shadow-brand-orange/20"
-                                                : "bg-brand-gray text-white hover:bg-gray-700"
+                                            className={`h-10 px-4 rounded-xl text-[10px] font-black transition-all active:scale-95 font-mono tracking-widest ${currentView === view.id
+                                                ? "bg-brand-orange text-white"
+                                                : "bg-gray-100 text-gray-500 hover:bg-gray-200"
                                                 }`}
                                         >
                                             {view.label}
@@ -236,11 +241,16 @@ export default function AdminDashboard() {
                                     }}
                                     dayHeaderContent={(args) => {
                                         const date = args.date;
-                                        const month = (date.getMonth() + 1).toString();
-                                        const day = date.getDate().toString();
-                                        const weekdays = ["週日", "週一", "週二", "週三", "週四", "週五", "週六"];
+                                        const month = (date.getMonth() + 1).toString().padStart(2, '0');
+                                        const day = date.getDate().toString().padStart(2, '0');
+                                        const weekdays = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
                                         const weekday = weekdays[date.getDay()];
-                                        return `${month}/${day} ${weekday}`;
+                                        return {
+                                            html: `<div class="font-mono flex flex-col items-center">
+                                                <span class="text-[10px] text-gray-400 font-black">${weekday}</span>
+                                                <span class="text-xs text-brand-gray font-black">${month}.${day}</span>
+                                            </div>`
+                                        };
                                     }}
                                     datesSet={(arg) => {
                                         setCalendarTitle(arg.view.title);
@@ -252,7 +262,6 @@ export default function AdminDashboard() {
                                 />
                             </div>
                         </div>
-
                     </div>
                 </div>
 
@@ -260,112 +269,97 @@ export default function AdminDashboard() {
 
                 {/* Right: Appointment List (1/3) */}
                 <div className="flex flex-col">
-                    <div className="bg-white p-8 rounded-[3rem] shadow-2xl border-4 border-white ring-1 ring-gray-100 flex flex-col h-full max-h-[850px] xl:max-h-none">
+                    <div className="bg-white p-6 rounded-[2rem] shadow-2xl border border-gray-100 flex flex-col h-full max-h-[850px] xl:max-h-none overflow-hidden font-base">
                         <div className="flex flex-col gap-6 mb-8">
-                            <h2 className="text-2xl font-black text-brand-gray flex items-center gap-3">
-                                <div className="w-2 h-8 bg-brand-orange rounded-full"></div>
-                                預約清單
+                            <h2 className="text-xl font-black text-brand-gray flex items-center gap-3 font-mono uppercase tracking-tighter">
+                                <span className="text-brand-orange">//</span> LIVE_FEED
                             </h2>
 
                             {/* Search Bar */}
                             <div className="relative">
-                                <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
                                 <input
                                     type="text"
-                                    placeholder="搜尋車牌或電話..."
+                                    placeholder="SEARCH_BY_PLATE_OR_PH..."
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="w-full bg-brand-light-gray p-5 pl-14 rounded-2xl font-bold border-2 border-transparent focus:border-brand-orange outline-none transition-all shadow-inner"
+                                    className="w-full bg-gray-50 p-4 pl-12 rounded-xl font-mono text-xs font-bold border border-transparent focus:border-brand-orange outline-none transition-all"
                                 />
                             </div>
                         </div>
 
-                        <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
-                            <div className="space-y-4">
-                                {filteredAppointments.length > 0 ? (
-                                    filteredAppointments.map((app) => (
-                                        <div key={app.id} className="bg-white border-2 border-gray-50 rounded-[2rem] p-6 shadow-sm hover:shadow-md hover:border-brand-orange/30 transition-all group">
-                                            <div className="flex justify-between items-start mb-4">
-                                                <div>
-                                                    <div className="flex items-center gap-2 mb-1">
-                                                        <span className={`w-3 h-3 rounded-full ${app.extendedProps.status === "PENDING" ? "bg-yellow-500" :
-                                                            app.extendedProps.status === "CONFIRMED" ? "bg-blue-600" :
-                                                                app.extendedProps.status === "CANCELLED" ? "bg-red-500" : "bg-green-500"
-                                                            }`}></span>
-                                                        <span className="text-xs font-black text-gray-400 uppercase tracking-widest">
-                                                            {app.extendedProps.status === "PENDING" ? "待確認" :
-                                                                app.extendedProps.status === "CONFIRMED" ? "已確認" :
-                                                                    app.extendedProps.status === "CANCELLED" ? "已取消" : "已完成"}
-                                                        </span>
-                                                    </div>
-                                                    <p className="text-xl font-black text-brand-gray tracking-tight">{app.extendedProps.carModel}</p>
-                                                    <p className="text-sm font-bold text-gray-500 flex items-center gap-1">
-                                                        <Hash size={14} className="text-brand-orange" /> {app.extendedProps.licensePlate || "未填寫"}
-                                                    </p>
-                                                </div>
-                                                <div className="text-right">
-                                                    <p className="text-sm font-black text-brand-gray">{format(new Date(app.start), "MM/dd")}</p>
-                                                    <p className="text-xs font-bold text-gray-400">{format(new Date(app.start), "HH:mm")}</p>
-                                                </div>
-                                            </div>
+                        <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar space-y-3">
+                            {filteredAppointments.length > 0 ? (
+                                filteredAppointments.map((app) => (
+                                    <div key={app.id} className="relative bg-white border border-gray-100 rounded-2xl p-5 shadow-sm hover:border-brand-orange/40 transition-all group overflow-hidden">
+                                        <div className="absolute top-0 left-0 w-1 h-full bg-gray-100 group-hover:bg-brand-orange transition-colors"></div>
 
-                                            <div className="grid grid-cols-2 gap-4 mb-6">
-                                                <div className="flex items-center gap-2 text-xs font-bold text-gray-500">
-                                                    <Phone size={14} className="text-brand-orange" /> {app.extendedProps.phoneNumber || "無電話"}
-                                                </div>
-                                                <div className="flex items-center gap-2 text-xs font-bold text-gray-500">
-                                                    <Clock size={14} className="text-brand-orange" /> {app.extendedProps.service?.name}
-                                                </div>
-                                            </div>
-
-                                            {app.extendedProps.status === "COMPLETED" && app.extendedProps.actualDuration && (
-                                                <div className="bg-brand-light-gray p-3 rounded-xl mb-4 flex justify-between items-center text-xs font-black">
-                                                    <span className="text-gray-400 uppercase">工時：{app.extendedProps.service?.duration || 120}m (預計) vs </span>
-                                                    <span className={`${app.extendedProps.actualDuration > (app.extendedProps.service?.duration || 120)
-                                                        ? "text-red-500"
-                                                        : "text-green-500"
-                                                        }`}>
-                                                        {app.extendedProps.actualDuration}m (實際)
+                                        <div className="flex justify-between items-start mb-3">
+                                            <div>
+                                                <div className="flex items-center gap-2 mb-2">
+                                                    <span className={`w-2 h-2 rounded-full animate-pulse ${app.extendedProps.status === "PENDING" ? "bg-yellow-500" :
+                                                        app.extendedProps.status === "CONFIRMED" ? "bg-blue-600" :
+                                                            app.extendedProps.status === "CANCELLED" ? "bg-red-500" : "bg-green-500"
+                                                        }`}></span>
+                                                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest font-mono">
+                                                        {app.extendedProps.status}
                                                     </span>
                                                 </div>
-                                            )}
-
-                                            <div className="flex gap-2">
-                                                {app.extendedProps.status === "PENDING" && (
-                                                    <button
-                                                        onClick={() => handleStatusUpdate(app.id, "CONFIRMED")}
-                                                        className="flex-1 bg-brand-orange hover:bg-orange-600 text-white py-3 rounded-xl text-sm font-black transition-all shadow-lg"
-                                                    >
-                                                        核准預約
-                                                    </button>
-                                                )}
-                                                {app.extendedProps.status === "CONFIRMED" && (
-                                                    <button
-                                                        onClick={() => handleStatusUpdate(app.id, "COMPLETED")}
-                                                        className="flex-1 bg-brand-gray hover:bg-black text-white py-3 rounded-xl text-sm font-black transition-all shadow-lg"
-                                                    >
-                                                        標記完工
-                                                    </button>
-                                                )}
-                                                <button
-                                                    onClick={() => {
-                                                        setSelectedAppointment(app.extendedProps);
-                                                        setIsDetailModalOpen(true);
-                                                    }}
-                                                    className="px-4 py-3 border-2 border-gray-100 hover:border-brand-gray rounded-xl text-gray-400 hover:text-brand-gray transition-all"
-                                                >
-                                                    詳情
-                                                </button>
+                                                <p className="text-lg font-black text-brand-gray tracking-tight leading-none mb-1">{app.extendedProps.carModel}</p>
+                                                <p className="text-xs font-black text-brand-orange font-mono flex items-center gap-1">
+                                                    PLATE: {app.extendedProps.licensePlate || "XXXX-XX"}
+                                                </p>
+                                            </div>
+                                            <div className="text-right font-mono text-brand-gray">
+                                                <p className="text-xs font-black">{format(new Date(app.start), "MM.dd")}</p>
+                                                <p className="text-[10px] font-bold text-gray-400">{format(new Date(app.start), "HH:mm")}</p>
                                             </div>
                                         </div>
-                                    ))
-                                ) : (
-                                    <div className="py-20 text-center space-y-3">
-                                        <Filter className="mx-auto text-gray-200" size={48} />
-                                        <p className="text-gray-400 font-bold">找不到相符的預約</p>
+
+                                        <div className="grid grid-cols-2 gap-3 mb-5">
+                                            <div className="flex items-center gap-2 text-[10px] font-bold text-gray-500 font-mono">
+                                                <Phone size={12} className="text-gray-300" /> {app.extendedProps.phoneNumber}
+                                            </div>
+                                            <div className="flex items-center gap-2 text-[10px] font-bold text-gray-500 font-mono">
+                                                <Clock size={12} className="text-gray-300" /> {String(app.extendedProps.service?.duration || 120).padStart(3, '0')} min
+                                            </div>
+                                        </div>
+
+                                        <div className="flex gap-2">
+                                            {app.extendedProps.status === "PENDING" && (
+                                                <button
+                                                    onClick={() => handleStatusUpdate(app.id, "CONFIRMED")}
+                                                    className="flex-1 bg-brand-orange text-white py-2 rounded-lg text-[10px] font-black transition-all hover:bg-orange-600 uppercase tracking-widest font-mono"
+                                                >
+                                                    APPROVE
+                                                </button>
+                                            )}
+                                            {app.extendedProps.status === "CONFIRMED" && (
+                                                <button
+                                                    onClick={() => handleStatusUpdate(app.id, "COMPLETED")}
+                                                    className="flex-1 bg-brand-gray text-white py-2 rounded-lg text-[10px] font-black transition-all hover:bg-black uppercase tracking-widest font-mono"
+                                                >
+                                                    COMPLETE
+                                                </button>
+                                            )}
+                                            <button
+                                                onClick={() => {
+                                                    setSelectedAppointment(app.extendedProps);
+                                                    setIsDetailModalOpen(true);
+                                                }}
+                                                className="px-3 py-2 bg-gray-50 text-gray-400 hover:text-brand-gray rounded-lg text-[10px] font-black border border-transparent hover:border-gray-200 transition-all uppercase font-mono tracking-widest"
+                                            >
+                                                INFO
+                                            </button>
+                                        </div>
                                     </div>
-                                )}
-                            </div>
+                                ))
+                            ) : (
+                                <div className="py-20 text-center space-y-3">
+                                    <Filter className="mx-auto text-gray-100" size={48} />
+                                    <p className="text-gray-300 font-mono text-xs font-black uppercase tracking-widest leading-none">NO_DATA_MATCHED</p>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -374,84 +368,46 @@ export default function AdminDashboard() {
             <style jsx global>{`
         .admin-calendar .fc {
           border: none !important;
-          --fc-border-color: #f3f4f6;
-          --fc-today-bg-color: #fff7ed;
-          font-family: inherit;
+          --fc-border-color: #f1f5f9;
+          --fc-today-bg-color: #fffaf0;
+          font-family: var(--font-mono) !important;
         }
         
-        /* 表頭樣式：絕對不折行、縮小字體、最小寬度 */
         .admin-calendar .fc-col-header-cell {
-          min-width: 80px !important;
-          background: #f9fafb !important;
-          border-bottom: 2px solid #f3f4f6 !important;
-        }
-        .admin-calendar .fc-col-header-cell-cushion {
-          padding: 1rem 0.25rem !important;
-          display: block !important;
-          white-space: nowrap !important;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          font-size: 0.8rem !important;
-          font-weight: 800 !important;
-          color: #6b7280;
-          text-decoration: none !important;
-        }
-
-
-        
-        /* 今天的日期表頭特別標示 */
-        .admin-calendar .fc-day-today .fc-col-header-cell-cushion {
-          color: #ff8c00 !important;
-        }
-
-        /* 時段顯示優化 */
-        .admin-calendar .fc-timegrid-slot-label {
-          vertical-align: middle !important;
-        }
-        .admin-calendar .fc-timegrid-slot-label-cushion {
-          font-size: 0.75rem !important;
-          font-weight: 700 !important;
-          color: #9ca3af;
-          text-transform: uppercase;
+          background: #ffffff !important;
+          border-bottom: 2px solid #0f172a !important;
         }
         
         .admin-calendar .fc-timegrid-slot {
-          height: 80px !important; /* 調降高度讓 1 小時一格不會過長 */
-          border-bottom: 1px dashed #f3f4f6 !important;
+          height: 70px !important;
+          border-bottom: 1px dashed #f1f5f9 !important;
         }
         
         .admin-calendar .fc-event {
-          border-radius: 0.75rem !important;
-          padding: 0.4rem !important;
-          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05) !important;
+          border-radius: 6px !important;
+          padding: 2px !important;
           border: none !important;
           cursor: pointer !important;
-          transition: transform 0.2s;
-        }
-        .admin-calendar .fc-event:hover {
-          transform: scale(1.02);
-          z-index: 50;
-        }
-        .admin-calendar .fc-event-main {
-          padding: 0.25rem !important;
-          font-weight: 700 !important;
-          font-size: 0.8rem !important;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
         }
 
-
+        .admin-calendar .fc-timegrid-slot-label-cushion {
+          font-family: var(--font-mono);
+          font-size: 10px !important;
+          font-weight: 700;
+          color: #94a3b8;
+          text-transform: uppercase;
+        }
+        
         .custom-scrollbar::-webkit-scrollbar {
-          width: 6px;
+          width: 4px;
         }
         .custom-scrollbar::-webkit-scrollbar-track {
-          background: #f9fafb;
-          border-radius: 10px;
+          background: transparent;
         }
         .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: #e5e7eb;
+          background: #e2e8f0;
           border-radius: 10px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: #d1d5db;
         }
       `}</style>
 
