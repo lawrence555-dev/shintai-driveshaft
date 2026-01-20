@@ -21,9 +21,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         authorized({ auth, request: { nextUrl } }) {
             const isLoggedIn = !!auth?.user;
             const isAdminPage = nextUrl.pathname.startsWith("/admin");
+            // @ts-ignore
+            const isAdmin = auth?.user?.role === "ADMIN";
 
             if (isAdminPage) {
-                if (isLoggedIn) return true;
+                if (isLoggedIn && isAdmin) return true;
                 return false;
             }
             return true;
@@ -34,8 +36,18 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                 token.id = user.id;
                 // @ts-ignore
                 token.role = user.role;
+            } else if (token.email) {
+                // If user is not provided (subsequent calls), fetch the latest role from DB
+                // This ensures that if a user is promoted to ADMIN, they don't have to log out
+                const dbUser = await prisma.user.findUnique({
+                    where: { email: token.email },
+                    select: { id: true, role: true }
+                });
+                if (dbUser) {
+                    token.id = dbUser.id;
+                    token.role = dbUser.role;
+                }
             }
-            // Update token if role changed in DB (optional, but good for consistency)
             return token;
         },
         async session({ session, token }) {

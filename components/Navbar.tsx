@@ -85,12 +85,14 @@ export default function Navbar() {
                         </button>
                     )}
 
-                    <Link
-                        href="/admin"
-                        className="text-gray-400 hover:text-brand-orange transition-all p-1 hover:rotate-90"
-                    >
-                        <Settings size={18} />
-                    </Link>
+                    {session?.user?.role === "ADMIN" && (
+                        <Link
+                            href="/admin"
+                            className="text-gray-400 hover:text-brand-orange transition-all p-1 hover:rotate-90"
+                        >
+                            <Settings size={18} />
+                        </Link>
+                    )}
                 </div>
             </div>
             <WarrantyLookupDialog
