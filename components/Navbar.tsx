@@ -34,12 +34,14 @@ export default function Navbar() {
             </div>
 
             <div className="flex items-center space-x-4 md:space-x-6">
-                <Link
-                    href="/booking/my-bookings"
-                    className="text-gray-300 hover:text-brand-orange text-sm font-bold transition-all hidden lg:block uppercase tracking-widest"
-                >
-                    我的預約
-                </Link>
+                {session && (
+                    <Link
+                        href="/booking/my-bookings"
+                        className="text-gray-300 hover:text-brand-orange text-sm font-bold transition-all hidden lg:block uppercase tracking-widest"
+                    >
+                        我的預約
+                    </Link>
+                )}
 
                 <button
                     onClick={() => setIsWarrantyDialogOpen(true)}
