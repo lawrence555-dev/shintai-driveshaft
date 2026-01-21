@@ -16,6 +16,8 @@ export default function AdminDashboard() {
     const calendarRef = useRef<any>(null);
     const [calendarTitle, setCalendarTitle] = useState("");
     const [currentView, setCurrentView] = useState("timeGridWeek");
+    const [isMobile, setIsMobile] = useState(false);
+    const [isMounted, setIsMounted] = useState(false);
     const [appointments, setAppointments] = useState<any[]>([]);
 
     const [loading, setLoading] = useState(true);
@@ -71,7 +73,14 @@ export default function AdminDashboard() {
 
 
     useEffect(() => {
+        setIsMounted(true);
+        const handleResize = () => {
+            setIsMobile(window.innerWidth < 768);
+        };
+        handleResize();
+        window.addEventListener("resize", handleResize);
         fetchAppointments();
+        return () => window.removeEventListener("resize", handleResize);
     }, [fetchAppointments]);
 
     // Derived filtered data
@@ -219,48 +228,54 @@ export default function AdminDashboard() {
                             </div>
 
                             <div className="calendar-container admin-calendar flex-1">
-                                <FullCalendar
-                                    ref={calendarRef}
-                                    plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-                                    initialView={window.innerWidth < 768 ? "timeGridDay" : "timeGridWeek"}
-                                    headerToolbar={false}
-                                    locale={zhTwLocale}
-                                    slotMinTime="08:00:00"
-                                    slotMaxTime="19:00:00"
-                                    allDaySlot={false}
-                                    businessHours={{
-                                        daysOfWeek: [1, 2, 3, 4, 5, 6],
-                                        startTime: "08:30",
-                                        endTime: "17:30",
-                                    }}
-                                    slotDuration="01:00:00"
-                                    slotLabelFormat={{
-                                        hour: "numeric",
-                                        minute: "2-digit",
-                                        meridiem: "short",
-                                        hour12: true,
-                                    }}
-                                    dayHeaderContent={(args) => {
-                                        const date = args.date;
-                                        const month = (date.getMonth() + 1).toString().padStart(2, '0');
-                                        const day = date.getDate().toString().padStart(2, '0');
-                                        const weekdays = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
-                                        const weekday = weekdays[date.getDay()];
-                                        return {
-                                            html: `<div class="font-mono flex flex-col items-center">
+                                {isMounted ? (
+                                    <FullCalendar
+                                        ref={calendarRef}
+                                        plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
+                                        initialView={isMobile ? "timeGridDay" : "timeGridWeek"}
+                                        headerToolbar={false}
+                                        locale={zhTwLocale}
+                                        slotMinTime="08:00:00"
+                                        slotMaxTime="19:00:00"
+                                        allDaySlot={false}
+                                        businessHours={{
+                                            daysOfWeek: [1, 2, 3, 4, 5, 6],
+                                            startTime: "08:30",
+                                            endTime: "17:30",
+                                        }}
+                                        slotDuration="01:00:00"
+                                        slotLabelFormat={{
+                                            hour: "numeric",
+                                            minute: "2-digit",
+                                            meridiem: "short",
+                                            hour12: true,
+                                        }}
+                                        dayHeaderContent={(args) => {
+                                            const date = args.date;
+                                            const month = (date.getMonth() + 1).toString().padStart(2, '0');
+                                            const day = date.getDate().toString().padStart(2, '0');
+                                            const weekdays = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
+                                            const weekday = weekdays[date.getDay()];
+                                            return {
+                                                html: `<div class="font-mono flex flex-col items-center">
                                                 <span class="text-[10px] text-gray-400 font-black">${weekday}</span>
                                                 <span class="text-xs text-brand-gray font-black">${month}.${day}</span>
                                             </div>`
-                                        };
-                                    }}
-                                    datesSet={(arg) => {
-                                        setCalendarTitle(arg.view.title);
-                                        setCurrentView(arg.view.type);
-                                    }}
-                                    height="auto"
-                                    events={appointments}
-                                    eventClick={handleEventClick}
-                                />
+                                            };
+                                        }}
+                                        datesSet={(arg) => {
+                                            setCalendarTitle(arg.view.title);
+                                            setCurrentView(arg.view.type);
+                                        }}
+                                        height="auto"
+                                        events={appointments}
+                                        eventClick={handleEventClick}
+                                    />
+                                ) : (
+                                    <div className="flex-1 flex items-center justify-center bg-gray-50/50 rounded-2xl border-2 border-dashed border-gray-100 min-h-[500px]">
+                                        <Loader2 className="w-8 h-8 text-brand-orange animate-spin opacity-20" />
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>
