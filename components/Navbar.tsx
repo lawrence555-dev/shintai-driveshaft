@@ -1,11 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { Settings, UserCircle, LogOut } from "lucide-react";
+import { Settings, UserCircle, LogOut, ShieldCheck } from "lucide-react";
 import { useSession, signIn, signOut } from "next-auth/react";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import WarrantyLookupDialog from "./WarrantyLookupDialog";
 
 import { useSettings } from "@/hooks/useSettings";
@@ -15,6 +15,14 @@ export default function Navbar() {
     const { data: session } = useSession();
     const router = useRouter();
     const [isWarrantyDialogOpen, setIsWarrantyDialogOpen] = useState(false);
+    const [isMobile, setIsMobile] = useState(false);
+
+    useEffect(() => {
+        const checkMobile = () => setIsMobile(window.innerWidth < 768);
+        checkMobile();
+        window.addEventListener("resize", checkMobile);
+        return () => window.removeEventListener("resize", checkMobile);
+    }, []);
 
     const handleBooking = (e: React.MouseEvent) => {
         e.preventDefault();
@@ -26,10 +34,10 @@ export default function Navbar() {
     };
 
     return (
-        <nav className="fixed top-4 left-4 right-4 bg-brand-gray/80 backdrop-blur-xl text-white py-4 px-6 md:px-12 flex items-center justify-between z-50 rounded-2xl border border-white/10 shadow-2xl">
+        <nav className="fixed top-2 left-2 right-2 md:top-4 md:left-4 md:right-4 bg-brand-gray/80 backdrop-blur-xl text-white py-3 px-4 md:py-4 md:px-12 flex items-center justify-between z-50 rounded-2xl border border-white/10 shadow-2xl">
             <div className="flex items-center space-x-2">
-                <Link href="/" className="text-2xl font-black tracking-tighter hover:text-brand-orange transition-all duration-300">
-                    <span className="text-brand-orange">SHINTAI</span> {settings?.businessName?.includes("新泰") ? "新泰" : (settings?.businessName || "汽車傳動軸")}
+                <Link href="/" className="text-xl md:text-2xl font-black tracking-tighter hover:text-brand-orange transition-all duration-300">
+                    <span className="text-brand-orange">ST</span> {!isMobile && (settings?.businessName?.includes("新泰") ? "新泰" : (settings?.businessName || "汽車傳動軸"))}
                 </Link>
             </div>
 
@@ -45,16 +53,19 @@ export default function Navbar() {
 
                 <button
                     onClick={() => setIsWarrantyDialogOpen(true)}
-                    className="border border-brand-orange/50 text-brand-orange hover:bg-brand-orange hover:text-white px-5 py-2.5 rounded-xl font-bold text-sm transition-all active:scale-95 hidden sm:block shadow-[0_0_20px_rgba(255,107,0,0.1)]"
+                    className="flex items-center justify-center border border-brand-orange/50 text-brand-orange hover:bg-brand-orange hover:text-white w-10 h-10 sm:w-auto sm:px-5 sm:py-2.5 rounded-xl font-bold text-sm transition-all active:scale-95 shadow-[0_0_20px_rgba(255,107,0,0.1)]"
+                    title="保固查詢"
                 >
-                    保固查詢
+                    <ShieldCheck className="sm:hidden" size={20} />
+                    <span className="hidden sm:inline">保固查詢</span>
                 </button>
 
                 <button
                     onClick={handleBooking}
-                    className="bg-brand-orange hover:bg-orange-600 text-white px-5 py-2.5 rounded-xl font-bold text-sm transition-all shadow-[0_0_20px_rgba(255,107,0,0.3)] active:scale-95 hover:shadow-[0_0_30px_rgba(255,107,0,0.5)]"
+                    className="bg-brand-orange hover:bg-orange-600 text-white px-4 py-2.5 md:px-5 md:py-2.5 rounded-xl font-bold text-[10px] md:text-sm transition-all shadow-[0_0_20px_rgba(255,107,0,0.3)] active:scale-95 hover:shadow-[0_0_30px_rgba(255,107,0,0.5)] uppercase tracking-tighter sm:tracking-normal"
                 >
-                    預約維修
+                    <span className="sm:hidden">預約</span>
+                    <span className="hidden sm:inline">預約維修</span>
                 </button>
 
                 <div className="flex items-center space-x-4 pl-4 border-l border-white/10">
@@ -90,7 +101,7 @@ export default function Navbar() {
                     {session?.user?.role === "ADMIN" && (
                         <Link
                             href="/admin"
-                            className="text-gray-400 hover:text-brand-orange transition-all p-1 hover:rotate-90"
+                            className="text-gray-400 hover:text-brand-orange transition-all p-1 hover:rotate-90 hidden sm:block"
                         >
                             <Settings size={18} />
                         </Link>

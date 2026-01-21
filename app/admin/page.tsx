@@ -114,15 +114,15 @@ export default function AdminDashboard() {
 
     return (
         <div className="space-y-12">
-            <header className="space-y-2">
-                <h1 className="text-5xl md:text-7xl font-black text-brand-gray tracking-tighter uppercase leading-none">
+            <header className="space-y-4 md:space-y-2">
+                <h1 className="text-4xl sm:text-5xl md:text-7xl font-black text-brand-gray tracking-tighter uppercase leading-none">
                     <span className="text-brand-orange">SYSTEM</span> CONTROL
                 </h1>
-                <p className="text-xl text-gray-400 font-bold font-mono tracking-tight uppercase">Driveshaft Management Command Center</p>
+                <p className="text-sm md:text-xl text-gray-400 font-bold font-mono tracking-tight uppercase">Driveshaft Management Command Center</p>
             </header>
 
             {/* Stats Cards / Filters */}
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-4">
                 {[
                     { id: "PENDING", label: "Pending", color: "bg-yellow-500", icon: AlertCircle },
                     { id: "CONFIRMED", label: "Confirmed", color: "bg-blue-600", icon: CheckCircle },
@@ -133,22 +133,22 @@ export default function AdminDashboard() {
                     <button
                         key={stat.label}
                         onClick={() => setStatusFilter(stat.id)}
-                        className={`p-6 rounded-2xl shadow-lg border transition-all flex items-center justify-between group relative overflow-hidden ${statusFilter === stat.id
+                        className={`p-4 md:p-6 rounded-2xl shadow-lg border transition-all flex items-center justify-between group relative overflow-hidden ${statusFilter === stat.id
                             ? "bg-white border-brand-orange ring-1 ring-brand-orange/20"
                             : "bg-white border-gray-100 hover:border-gray-200"
-                            }`}
+                            } ${stat.label === "Total" ? "col-span-2 md:col-span-1" : ""}`}
                     >
                         {statusFilter === stat.id && (
-                            <div className="absolute top-0 right-0 w-2 h-full bg-brand-orange animate-pulse"></div>
+                            <div className="absolute top-0 right-0 w-1.5 h-full bg-brand-orange animate-pulse"></div>
                         )}
-                        <div>
-                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1 font-mono">{stat.label}</p>
-                            <p className="text-4xl font-black text-brand-gray tracking-tighter font-mono">
+                        <div className="text-left">
+                            <p className="text-[8px] md:text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1 font-mono">{stat.label}</p>
+                            <p className="text-2xl md:text-4xl font-black text-brand-gray tracking-tighter font-mono leading-none">
                                 {String(stat.id ? appointments.filter(e => e.extendedProps.status === stat.id).length : appointments.length).padStart(2, '0')}
                             </p>
                         </div>
-                        <div className={`w-10 h-10 ${stat.color} rounded-xl flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform`}>
-                            <stat.icon size={20} />
+                        <div className={`w-8 h-8 md:w-10 md:h-10 ${stat.color} rounded-lg md:rounded-xl flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform shrink-0`}>
+                            <stat.icon size={16} className="md:w-5 md:h-5" />
                         </div>
                     </button>
                 ))}
@@ -156,62 +156,63 @@ export default function AdminDashboard() {
 
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-10 items-start">
                 {/* Left: Calendar (2/3) */}
-                <div className="xl:col-span-2 flex flex-col sticky top-32">
-                    <div className="bg-white p-8 rounded-[2rem] shadow-2xl border border-gray-100 flex-1 relative overflow-hidden flex flex-col">
-                        <div className="absolute top-0 right-0 p-4">
+                <div className="xl:col-span-2 flex flex-col xl:sticky xl:top-32">
+                    <div className="bg-white p-4 md:p-8 rounded-[2rem] shadow-2xl border border-gray-100 flex-1 relative overflow-hidden flex flex-col">
+                        <div className="absolute top-0 right-0 p-4 hidden md:block">
                             <div className="w-2 h-2 bg-brand-orange rounded-full animate-ping"></div>
                         </div>
-                        <h2 className="text-xl font-black text-brand-gray mb-8 flex items-center gap-3 font-mono uppercase tracking-tighter">
+                        <h2 className="text-lg md:text-xl font-black text-brand-gray mb-6 md:mb-8 flex items-center gap-3 font-mono uppercase tracking-tighter">
                             <span className="text-brand-orange">//</span> SCHEDULING_MATRIX
                         </h2>
-                        <div className="flex-1 min-h-[700px] flex flex-col">
+                        <div className="flex-1 min-h-[500px] md:min-h-[700px] flex flex-col">
                             {/* Custom Header */}
-                            <div className="flex flex-wrap sm:flex-nowrap justify-between items-center w-full mb-8 gap-4 border-b border-gray-50 pb-6">
+                            <div className="flex flex-wrap items-center justify-between w-full mb-6 gap-4 border-b border-gray-50 pb-6">
                                 {/* Navigation (Left) */}
-                                <div className="flex items-center gap-2 flex-nowrap shrink-0">
+                                <div className="flex items-center gap-2 flex-nowrap shrink-0 order-2 sm:order-1">
                                     <button
                                         onClick={() => calendarRef.current?.getApi().prev()}
-                                        className="h-10 w-10 flex items-center justify-center bg-brand-gray/5 text-brand-gray rounded-xl hover:bg-brand-orange hover:text-white transition-all active:scale-95"
+                                        className="h-8 w-8 md:h-10 md:w-10 flex items-center justify-center bg-brand-gray/5 text-brand-gray rounded-lg md:rounded-xl hover:bg-brand-orange hover:text-white transition-all active:scale-95"
                                     >
-                                        <ChevronLeft size={20} />
+                                        <ChevronLeft size={18} className="md:w-5 md:h-5" />
                                     </button>
                                     <button
                                         onClick={() => calendarRef.current?.getApi().next()}
-                                        className="h-10 w-10 flex items-center justify-center bg-brand-gray/5 text-brand-gray rounded-xl hover:bg-brand-orange hover:text-white transition-all active:scale-95"
+                                        className="h-8 w-8 md:h-10 md:w-10 flex items-center justify-center bg-brand-gray/5 text-brand-gray rounded-lg md:rounded-xl hover:bg-brand-orange hover:text-white transition-all active:scale-95"
                                     >
-                                        <ChevronRight size={20} />
+                                        <ChevronRight size={18} className="md:w-5 md:h-5" />
                                     </button>
                                     <button
                                         onClick={() => calendarRef.current?.getApi().today()}
-                                        className="h-10 px-4 flex items-center justify-center bg-brand-gray text-white rounded-xl font-black text-xs hover:bg-brand-orange transition-all active:scale-95 uppercase tracking-widest font-mono"
+                                        className="h-8 md:h-10 px-3 md:px-4 flex items-center justify-center bg-brand-gray text-white rounded-lg md:rounded-xl font-black text-[10px] md:text-xs hover:bg-brand-orange transition-all active:scale-95 uppercase tracking-widest font-mono"
                                     >
                                         Today
                                     </button>
                                 </div>
 
                                 {/* Title (Center) */}
-                                <div className="flex-1 text-center min-w-0">
-                                    <h3 className="text-xl font-black text-brand-gray tracking-tighter font-mono uppercase">
+                                <div className="w-full sm:flex-1 text-center min-w-0 order-1 sm:order-2">
+                                    <h3 className="text-base md:text-xl font-black text-brand-gray tracking-tighter font-mono uppercase truncate px-2">
                                         {calendarTitle}
                                     </h3>
                                 </div>
 
                                 {/* Views (Right) */}
-                                <div className="flex items-center gap-2 flex-nowrap shrink-0 justify-end">
+                                <div className="flex items-center gap-1.5 md:gap-2 flex-nowrap shrink-0 justify-end order-3">
                                     {[
-                                        { id: "dayGridMonth", label: "MONTH" },
-                                        { id: "timeGridWeek", label: "WEEK" },
-                                        { id: "timeGridDay", label: "DAY" },
+                                        { id: "dayGridMonth", label: "MO" },
+                                        { id: "timeGridWeek", label: "WK" },
+                                        { id: "timeGridDay", label: "DY" },
                                     ].map((view) => (
                                         <button
                                             key={view.id}
                                             onClick={() => calendarRef.current?.getApi().changeView(view.id)}
-                                            className={`h-10 px-4 rounded-xl text-[10px] font-black transition-all active:scale-95 font-mono tracking-widest ${currentView === view.id
+                                            className={`h-8 md:h-10 px-2.5 md:px-4 rounded-lg md:rounded-xl text-[10px] font-black transition-all active:scale-95 font-mono tracking-widest ${currentView === view.id
                                                 ? "bg-brand-orange text-white"
                                                 : "bg-gray-100 text-gray-500 hover:bg-gray-200"
                                                 }`}
                                         >
-                                            {view.label}
+                                            <span className="md:hidden">{view.label}</span>
+                                            <span className="hidden md:inline">{view.label === "MO" ? "MONTH" : view.label === "WK" ? "WEEK" : "DAY"}</span>
                                         </button>
                                     ))}
                                 </div>
@@ -221,7 +222,7 @@ export default function AdminDashboard() {
                                 <FullCalendar
                                     ref={calendarRef}
                                     plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-                                    initialView="timeGridWeek"
+                                    initialView={window.innerWidth < 768 ? "timeGridDay" : "timeGridWeek"}
                                     headerToolbar={false}
                                     locale={zhTwLocale}
                                     slotMinTime="08:00:00"
