@@ -70,7 +70,7 @@ export default function MyBookingsPage() {
         <main className="min-h-screen bg-brand-light-gray pb-20">
             <Navbar />
 
-            <div className="max-w-xl mx-auto px-6 py-12">
+            <div className="max-w-xl mx-auto px-6 py-28 md:py-32">
                 <header className="mb-10 text-center">
                     <h1 className="text-3xl font-bold text-brand-gray mb-4">我的預約紀錄</h1>
                     <p className="text-gray-500 italic">僅顯示即將到來且可取消的預約</p>

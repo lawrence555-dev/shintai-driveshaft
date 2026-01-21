@@ -136,7 +136,7 @@ export default function BookingPage() {
         <main className="min-h-screen bg-brand-light-gray">
             <Navbar />
 
-            <div className="max-w-4xl mx-auto px-6 py-12">
+            <div className="max-w-4xl mx-auto px-6 py-28 md:py-32">
                 <div className="mb-12 text-center">
                     <h1 className="text-3xl font-bold text-brand-gray mb-4">預約維修服務</h1>
                     <p className="text-gray-500">請填寫以下資訊，我們將為您安排專屬修護時段</p>

@@ -35,13 +35,13 @@ export default function Navbar() {
 
     return (
         <nav className="fixed top-2 left-2 right-2 md:top-4 md:left-4 md:right-4 bg-brand-gray/80 backdrop-blur-xl text-white py-3 px-4 md:py-4 md:px-12 flex items-center justify-between z-50 rounded-2xl border border-white/10 shadow-2xl">
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-2 shrink-0">
                 <Link href="/" className="text-xl md:text-2xl font-black tracking-tighter hover:text-brand-orange transition-all duration-300">
                     <span className="text-brand-orange">ST</span> {!isMobile && (settings?.businessName?.includes("新泰") ? "新泰" : (settings?.businessName || "汽車傳動軸"))}
                 </Link>
             </div>
 
-            <div className="flex items-center space-x-4 md:space-x-6">
+            <div className="flex items-center space-x-2 md:space-x-4 flex-nowrap shrink-0">
                 {session && (
                     <>
                         <Link
@@ -52,7 +52,7 @@ export default function Navbar() {
                         </Link>
                         <Link
                             href="/booking/my-bookings"
-                            className="text-gray-400 hover:text-brand-orange transition-all p-1 lg:hidden"
+                            className="text-gray-400 hover:text-brand-orange transition-all p-1 lg:hidden shrink-0"
                             title="我的預約"
                         >
                             <CalendarClock size={20} />
@@ -62,7 +62,7 @@ export default function Navbar() {
 
                 <button
                     onClick={() => setIsWarrantyDialogOpen(true)}
-                    className="flex items-center justify-center border border-brand-orange/50 text-brand-orange hover:bg-brand-orange hover:text-white w-10 h-10 sm:w-auto sm:px-5 sm:py-2.5 rounded-xl font-bold text-sm transition-all active:scale-95 shadow-[0_0_20px_rgba(255,107,0,0.1)]"
+                    className="flex items-center justify-center border border-brand-orange/50 text-brand-orange hover:bg-brand-orange hover:text-white w-9 h-9 sm:w-auto sm:px-5 sm:py-2.5 rounded-xl font-bold text-sm transition-all active:scale-95 shadow-[0_0_20px_rgba(255,107,0,0.1)] shrink-0"
                     title="保固查詢"
                 >
                     <ShieldCheck className="sm:hidden" size={20} />
@@ -71,13 +71,13 @@ export default function Navbar() {
 
                 <button
                     onClick={handleBooking}
-                    className="bg-brand-orange hover:bg-orange-600 text-white px-4 py-2.5 md:px-5 md:py-2.5 rounded-xl font-bold text-[10px] md:text-sm transition-all shadow-[0_0_20px_rgba(255,107,0,0.3)] active:scale-95 hover:shadow-[0_0_30px_rgba(255,107,0,0.5)] uppercase tracking-tighter sm:tracking-normal"
+                    className="bg-brand-orange hover:bg-orange-600 text-white px-3 py-2 md:px-5 md:py-2.5 rounded-xl font-bold text-[10px] md:text-sm transition-all shadow-[0_0_20px_rgba(255,107,0,0.3)] active:scale-95 hover:shadow-[0_0_30px_rgba(255,107,0,0.5)] uppercase tracking-tighter sm:tracking-normal shrink-0"
                 >
-                    <span className="sm:hidden">預約</span>
+                    <span className="sm:hidden text-[9px]">預約</span>
                     <span className="hidden sm:inline">預約維修</span>
                 </button>
 
-                <div className="flex items-center space-x-4 pl-4 border-l border-white/10">
+                <div className="flex items-center space-x-2 md:space-x-4 pl-2 md:pl-4 border-l border-white/10 shrink-0">
 
                     {session ? (
                         <div className="flex items-center space-x-3">

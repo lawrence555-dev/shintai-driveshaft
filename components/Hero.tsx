@@ -23,7 +23,7 @@ export default function Hero() {
     };
 
     return (
-        <section className="relative h-screen min-h-[700px] flex items-center justify-center bg-brand-gray overflow-hidden">
+        <section className="relative h-screen min-h-[700px] flex items-center justify-center bg-brand-gray overflow-hidden pt-20">
             {/* Base Image with grayscale/brightness filter */}
             <div className="absolute inset-0 opacity-40 bg-[url('https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?q=80&w=2000')] bg-cover bg-center grayscale contrast-125"></div>
 
