@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Settings, UserCircle, LogOut, ShieldCheck } from "lucide-react";
+import { Settings, UserCircle, LogOut, ShieldCheck, CalendarClock } from "lucide-react";
 import { useSession, signIn, signOut } from "next-auth/react";
 
 import { useRouter } from "next/navigation";
@@ -43,12 +43,21 @@ export default function Navbar() {
 
             <div className="flex items-center space-x-4 md:space-x-6">
                 {session && (
-                    <Link
-                        href="/booking/my-bookings"
-                        className="text-gray-300 hover:text-brand-orange text-sm font-bold transition-all hidden lg:block uppercase tracking-widest"
-                    >
-                        我的預約
-                    </Link>
+                    <>
+                        <Link
+                            href="/booking/my-bookings"
+                            className="text-gray-300 hover:text-brand-orange text-sm font-bold transition-all hidden lg:block uppercase tracking-widest"
+                        >
+                            我的預約
+                        </Link>
+                        <Link
+                            href="/booking/my-bookings"
+                            className="text-gray-400 hover:text-brand-orange transition-all p-1 lg:hidden"
+                            title="我的預約"
+                        >
+                            <CalendarClock size={20} />
+                        </Link>
+                    </>
                 )}
 
                 <button
@@ -101,9 +110,9 @@ export default function Navbar() {
                     {session?.user?.role === "ADMIN" && (
                         <Link
                             href="/admin"
-                            className="text-gray-400 hover:text-brand-orange transition-all p-1 hover:rotate-90 hidden sm:block"
+                            className="text-gray-400 hover:text-brand-orange transition-all p-1 hover:rotate-90"
                         >
-                            <Settings size={18} />
+                            <Settings size={20} />
                         </Link>
                     )}
                 </div>
