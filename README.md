@@ -1,4 +1,4 @@
-# 新泰汽車傳動軸 - 專業維修預約管理系統 🚗💨
+# 新泰汽車傳動軸 - 專業維修預約管理系統
 
 [![Next.js](https://img.shields.io/badge/Next.js-15-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
 [![Prisma](https://img.shields.io/badge/Prisma-ORM-2D3748?style=for-the-badge&logo=prisma)](https://www.prisma.io/)
@@ -7,23 +7,23 @@
 
 這是為 **新泰汽車傳動軸** 量身打造的專業預約與客製化管理系統。結合現代化的網頁技術，提供客戶流暢的預約體驗，並為管理者提供強大的後台管理功能。
 
-## 📋 目錄
-- [✨ 核心功能](#-核心功能)
-    - [🌐 前端入口 (Public)](#-前端入口-public)
-    - [⚙️ 管理後台 (Admin Panel)](#️-管理後台-admin-panel)
-- [🛠 技術棧](#-技術棧)
-- [🚀 快速開始](#-快速開始)
-- [📄 專案文件](#-專案文件)
+## 目錄
+- [核心功能](#核心功能)
+    - [前端入口 (Public)](#前端入口-public)
+    - [管理後台 (Admin Panel)](#管理後台-admin-panel)
+- [技術棧](#技術棧)
+- [快速開始](#快速開始)
+- [專案文件](#專案文件)
 
-## ✨ 核心功能
+## 核心功能
 
-### 🌐 前端入口 (Public)
+### 前端入口 (Public)
 - **動態展示**：自動同步後台設定的商家資訊（名稱、電話、地址）。
 - **服務說明**：專業的傳動軸維修與平衡服務介紹。
 - **線上預約**：整合 Google 登入，提供 **月曆格式 (Month View)** 的時段選擇器，支援月份切換並自動顯示國定假日與補班狀態。
 - **保固查詢**：客戶可透過電話與車牌快速查詢維修保固狀態。
 
-### ⚙️ 管理後台 (Admin Panel)
+### 管理後台 (Admin Panel)
 - **預約看板**：即時掌握每日預約狀況，支援完整狀態生命週期：待確認、已確認、已完成、**已取消**。
 - **假日管理**：一鍵獲取台灣行政機關辦公日曆，並支援 **手動調整 (Override)**，可隨時變更特定日期為店休或營業。
 - **系統設定**：動態修改商家基本資料、預約時段限制。
@@ -31,7 +31,7 @@
 - **客戶/車輛管理**：建立完整的客戶維修歷史資料庫。
 - **保固管理**：一鍵生成保固記錄，自動計算到期日。
 
-## 🛠 技術棧
+## 技術棧
 
 - **框架**: Next.js 15 (App Router / Turbopack)
 - **資料庫**: PostgreSQL (透過 Prisma ORM)
@@ -40,7 +40,7 @@
 - **圖示庫**: Lucide React
 - **日期處理**: date-fns
 
-## 🚀 快速開始
+## 快速開始
 
 ### 環境變數設定
 建立 `.env` 檔案並填入以下內容：
@@ -76,7 +76,7 @@ GOOGLE_CLIENT_SECRET="your_google_secret"
    - `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET`: 填入 Google Console 憑證。
 4. 點擊 `Apply` 即可啟動自動化建置與部署。
 
-## 📄 專案文件
+## 專案文件
 - [系統規格書 (SYSTEM_SPEC.md)](./SYSTEM_SPEC.md)
 - [系統分析與設計文件 (SYSTEM_DESIGN.md)](./SYSTEM_DESIGN.md)
 - [使用者操作手冊 (USER_MANUAL.md)](./USER_MANUAL.md)
