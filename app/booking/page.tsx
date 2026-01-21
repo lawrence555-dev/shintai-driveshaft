@@ -1,7 +1,7 @@
 "use client";
 export const dynamic = 'force-dynamic';
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Navbar from "@/components/Navbar";
 import { useSearchParams } from "next/navigation";
 import { format, isSameDay, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, isSameMonth, addMonths, subMonths, isToday as isTodayFns, startOfDay, endOfDay } from "date-fns";
@@ -31,6 +31,7 @@ export default function BookingPage() {
     const [phoneError, setPhoneError] = useState<string | null>(null);
     const [currentMonth, setCurrentMonth] = useState(new Date());
     const [isSlotModalOpen, setIsSlotModalOpen] = useState(false);
+    const monthCache = useRef<Record<string, { booked: string[], exceptions: any[] }>>({});
 
     const availableDates = getAvailableDates(30);
 
@@ -62,12 +63,22 @@ export default function BookingPage() {
     // Fetch booked slots and holidays when month changes
     useEffect(() => {
         const fetchMonthData = async () => {
+            const monthKey = format(currentMonth, "yyyy-MM");
+            if (monthCache.current[monthKey]) {
+                setBookedSlots(monthCache.current[monthKey].booked);
+                setDateExceptions(monthCache.current[monthKey].exceptions);
+                return;
+            }
+
             try {
                 const monthStart = startOfMonth(currentMonth);
                 const monthEnd = endOfMonth(currentMonth);
-                const { booked, exceptions } = await getBookedSlots(monthStart, monthEnd);
-                setBookedSlots(booked);
-                setDateExceptions(exceptions);
+                const data = await getBookedSlots(monthStart, monthEnd);
+
+                // Update cache and state
+                monthCache.current[monthKey] = data;
+                setBookedSlots(data.booked);
+                setDateExceptions(data.exceptions);
             } catch (err) {
                 console.error("Failed to fetch month data:", err);
             }

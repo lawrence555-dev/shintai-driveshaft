@@ -133,22 +133,22 @@ export default function AdminDashboard() {
                     <button
                         key={stat.label}
                         onClick={() => setStatusFilter(stat.id)}
-                        className={`p-4 md:p-6 rounded-2xl shadow-lg border transition-all flex items-center justify-between group relative overflow-hidden ${statusFilter === stat.id
+                        className={`p-3 md:p-6 rounded-xl md:rounded-2xl shadow-lg border transition-all flex items-center justify-between group relative overflow-hidden ${statusFilter === stat.id
                             ? "bg-white border-brand-orange ring-1 ring-brand-orange/20"
                             : "bg-white border-gray-100 hover:border-gray-200"
                             } ${stat.label === "Total" ? "col-span-2 md:col-span-1" : ""}`}
                     >
                         {statusFilter === stat.id && (
-                            <div className="absolute top-0 right-0 w-1.5 h-full bg-brand-orange animate-pulse"></div>
+                            <div className="absolute left-0 top-0 bottom-0 w-1 bg-brand-orange animate-pulse"></div>
                         )}
                         <div className="text-left">
-                            <p className="text-[8px] md:text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1 font-mono">{stat.label}</p>
-                            <p className="text-2xl md:text-4xl font-black text-brand-gray tracking-tighter font-mono leading-none">
+                            <p className="text-[7px] md:text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-0.5 font-mono">{stat.label}</p>
+                            <p className="text-xl md:text-4xl font-black text-brand-gray tracking-tighter font-mono leading-none">
                                 {String(stat.id ? appointments.filter(e => e.extendedProps.status === stat.id).length : appointments.length).padStart(2, '0')}
                             </p>
                         </div>
-                        <div className={`w-8 h-8 md:w-10 md:h-10 ${stat.color} rounded-lg md:rounded-xl flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform shrink-0`}>
-                            <stat.icon size={16} className="md:w-5 md:h-5" />
+                        <div className={`w-7 h-7 md:w-10 md:h-10 ${stat.color} rounded-lg md:rounded-xl flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform shrink-0`}>
+                            <stat.icon size={14} className="md:w-5 md:h-5" />
                         </div>
                     </button>
                 ))}

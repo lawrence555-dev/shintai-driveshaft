@@ -31,39 +31,31 @@ export async function getDateExceptions(startDate: Date, endDate: Date) {
 
 // Get booked slots for a specific date range
 export async function getBookedSlots(startDate: Date, endDate: Date) {
-    const appointments = await prisma.appointment.findMany({
-        where: {
-            date: {
-                gte: startDate,
-                lte: endDate,
-            },
-            status: { not: "CANCELLED" },
-        },
-        select: {
-            date: true,
-        },
-    });
+    const start = Date.now();
 
-    const blockedSlots = await prisma.blockedSlot.findMany({
-        where: {
-            date: {
-                gte: startDate,
-                lte: endDate,
+    const [appointments, blockedSlots, holidayData] = await Promise.all([
+        prisma.appointment.findMany({
+            where: {
+                date: { gte: startDate, lte: endDate },
+                status: { not: "CANCELLED" },
             },
-        },
-        select: {
-            date: true,
-        },
-    });
+            select: { date: true },
+        }),
+        prisma.blockedSlot.findMany({
+            where: {
+                date: { gte: startDate, lte: endDate },
+            },
+            select: { date: true },
+        }),
+        prisma.holiday.findMany({
+            where: {
+                date: { gte: startDate, lte: endDate },
+            },
+        })
+    ]);
 
-    const holidayData = await prisma.holiday.findMany({
-        where: {
-            date: {
-                gte: startDate,
-                lte: endDate,
-            },
-        },
-    });
+    const duration = Date.now() - start;
+    console.log(`[PERF] getBookedSlots took ${duration}ms for ${startDate.toISOString()} to ${endDate.toISOString()}`);
 
     const booked = [
         ...appointments.map((a: { date: Date }) => a.date.toISOString()),

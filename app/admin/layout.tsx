@@ -43,13 +43,13 @@ export default function AdminLayout({
     return (
         <div className="flex min-h-screen bg-gray-50 pb-20 md:pb-0">
             {/* Mobile Header */}
-            <header className="md:hidden fixed top-0 left-0 right-0 h-16 bg-brand-gray text-white flex items-center justify-between px-6 z-[60] border-b border-white/5 shadow-lg">
+            <header className="md:hidden fixed top-0 left-0 right-0 h-16 bg-brand-gray/90 backdrop-blur-xl text-white flex items-center justify-between px-6 z-[60] border-b border-white/10 shadow-lg">
                 <Link href="/" className="flex items-center gap-2">
                     <div className="bg-brand-orange p-1.5 rounded-lg">
                         <Home size={18} className="text-white" />
                     </div>
-                    <span className="font-black tracking-tighter uppercase text-sm">
-                        {settings?.businessName.substring(0, 4) || "新泰"} ADMIN
+                    <span className="font-mono font-black tracking-tighter uppercase text-xs">
+                        {settings?.businessName.substring(0, 4) || "新泰"} <span className="text-brand-orange">ADMIN</span>
                     </span>
                 </Link>
                 <button
@@ -164,7 +164,7 @@ export default function AdminLayout({
             </main>
 
             {/* Mobile Bottom Navigation */}
-            <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-brand-gray/95 backdrop-blur-lg border-t border-white/10 px-6 py-3 flex items-center justify-between z-[60] shadow-[0_-10px_40px_rgba(0,0,0,0.3)]">
+            <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-brand-gray/90 backdrop-blur-xl border-t border-white/10 px-6 py-3 flex items-center justify-between z-[60] shadow-[0_-10px_40px_rgba(0,0,0,0.3)]">
                 {sidebarItems.slice(0, 5).map((item) => {
                     const isActive = pathname === item.href;
                     const Icon = item.icon;
@@ -172,10 +172,10 @@ export default function AdminLayout({
                         <Link
                             key={item.href}
                             href={item.href}
-                            className={`flex flex-col items-center gap-1 transition-colors ${isActive ? "text-brand-orange" : "text-white/40"}`}
+                            className={`flex flex-col items-center gap-1 transition-all duration-200 ${isActive ? "text-brand-orange scale-110" : "text-white/40 hover:text-white/60"}`}
                         >
-                            <Icon size={20} />
-                            <span className="text-[8px] font-black uppercase tracking-tighter">{item.name.substring(0, 2)}</span>
+                            <Icon size={18} className={isActive ? "drop-shadow-[0_0_8px_rgba(255,107,0,0.5)]" : ""} />
+                            <span className="text-[7px] font-mono font-black uppercase tracking-tighter">{item.name.substring(0, 2)}</span>
                         </Link>
                     );
                 })}
