@@ -1,4 +1,4 @@
-export { auth as middleware } from "./auth";
+export { auth as proxy } from "./auth";
 
 // Define matched routes for the middleware
 export const config = {
