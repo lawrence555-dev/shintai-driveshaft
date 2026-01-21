@@ -1,4 +1,4 @@
-import { addDays, isSunday, startOfDay, isToday, addMinutes, isBefore } from "date-fns";
+import { addDays, isSunday, startOfDay, isToday, addMinutes, isBefore, isSameDay } from "date-fns";
 
 export interface TimeSlot {
     label: string;
@@ -51,15 +51,13 @@ export function isSlotPassed(date: Date, slot: TimeSlot): boolean {
 export function isDateDisabled(date: Date, exceptions?: any[]): boolean {
     const isSun = isSunday(date);
 
-    if (exceptions) {
-        const dateString = date.toISOString().split('T')[0];
-        const exception = exceptions.find(e => {
-            const eDate = new Date(e.date).toISOString().split('T')[0];
-            return eDate === dateString;
-        });
+    if (exceptions && exceptions.length > 0) {
+        const exception = exceptions.find(e => isSameDay(new Date(e.date), date));
 
         if (exception) {
             // If it's in exceptions, return its isHoliday status
+            // This allows marking a Sunday as "NOT a holiday" (e.g. makeup work day)
+            // or marking a weekday as "a holiday" (e.g. national holidays)
             return exception.isHoliday;
         }
     }
