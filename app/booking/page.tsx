@@ -10,7 +10,7 @@ import { BOOKING_SLOTS, getAvailableDates, TimeSlot, getSlotDateTime, isSlotPass
 import { validateLicensePlate, validatePhone } from "@/lib/validation";
 import { Select, SelectTrigger, SelectContent, SelectItem } from "@/components/ui/Select";
 import { Calendar, Clock, Car, ChevronRight, ChevronLeft, CheckCircle2, AlertCircle, Phone, Hash, Wrench, Info, X } from "lucide-react";
-import { createAppointment, getServices, getBookedSlots } from "./actions";
+import { createAppointment, getServices, getBookedSlots, getGlobalDateExceptions } from "./actions";
 
 export default function BookingPage() {
     const searchParams = useSearchParams();
@@ -31,7 +31,8 @@ export default function BookingPage() {
     const [phoneError, setPhoneError] = useState<string | null>(null);
     const [currentMonth, setCurrentMonth] = useState(new Date());
     const [isSlotModalOpen, setIsSlotModalOpen] = useState(false);
-    const monthCache = useRef<Record<string, { booked: string[], exceptions: any[] }>>({});
+    const [globalExceptions, setGlobalExceptions] = useState<any[]>([]); // New global cache
+    const monthCache = useRef<Record<string, { booked: string[] }>>({});
 
     const availableDates = getAvailableDates(30);
 
@@ -54,19 +55,29 @@ export default function BookingPage() {
         };
         fetchServices();
 
+        // New: Fetch global holiday cache ONCE on mount
+        const fetchGlobalExceptions = async () => {
+            try {
+                const data = await getGlobalDateExceptions();
+                setGlobalExceptions(data);
+            } catch (err) {
+                console.error("Failed to fetch global exceptions:", err);
+            }
+        };
+        fetchGlobalExceptions();
+
         const type = searchParams.get("type");
         if (type === "inspection") {
             setCarModel("[專業檢查] ");
         }
     }, [searchParams]);
 
-    // Fetch booked slots and holidays when month changes
+    // Fetch booked slots when month changes (Holidays are now instant from globalExceptions)
     useEffect(() => {
         const fetchMonthData = async () => {
             const monthKey = format(currentMonth, "yyyy-MM");
             if (monthCache.current[monthKey]) {
                 setBookedSlots(monthCache.current[monthKey].booked);
-                setDateExceptions(monthCache.current[monthKey].exceptions);
                 return;
             }
 
@@ -78,7 +89,6 @@ export default function BookingPage() {
                 // Update cache and state
                 monthCache.current[monthKey] = data;
                 setBookedSlots(data.booked);
-                setDateExceptions(data.exceptions);
             } catch (err) {
                 console.error("Failed to fetch month data:", err);
             }
@@ -204,11 +214,11 @@ export default function BookingPage() {
 
                                                 return days.map((date) => {
                                                     const isCurrentMonth = isSameMonth(date, currentMonth);
-                                                    const disabled = !isCurrentMonth || isDateDisabled(date, dateExceptions) || (startOfDay(date) < startOfDay(new Date()));
+                                                    const disabled = !isCurrentMonth || isDateDisabled(date, globalExceptions) || (startOfDay(date) < startOfDay(new Date()));
                                                     const isToday = isTodayFns(date);
                                                     const isSelected = selectedDate && isSameDay(selectedDate, date);
 
-                                                    const exception = dateExceptions.find(e =>
+                                                    const exception = globalExceptions.find(e =>
                                                         isSameDay(new Date(e.date), date)
                                                     );
 

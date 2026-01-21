@@ -10,6 +10,23 @@ import {
     normalizePhone
 } from "@/lib/validation";
 
+// Get all holidays for current and next year for global caching
+export async function getGlobalDateExceptions() {
+    const now = new Date();
+    const startOfYearDate = new Date(now.getFullYear(), 0, 1);
+    const endOfNextYearDate = new Date(now.getFullYear() + 1, 11, 31);
+
+    return await prisma.holiday.findMany({
+        where: {
+            date: {
+                gte: startOfYearDate,
+                lte: endOfNextYearDate,
+            },
+        },
+        orderBy: { date: "asc" },
+    });
+}
+
 export async function getServices() {
     return await prisma.service.findMany({
         where: { isActive: true },
@@ -33,7 +50,7 @@ export async function getDateExceptions(startDate: Date, endDate: Date) {
 export async function getBookedSlots(startDate: Date, endDate: Date) {
     const start = Date.now();
 
-    const [appointments, blockedSlots, holidayData] = await Promise.all([
+    const [appointments, blockedSlots] = await Promise.all([
         prisma.appointment.findMany({
             where: {
                 date: { gte: startDate, lte: endDate },
@@ -46,11 +63,6 @@ export async function getBookedSlots(startDate: Date, endDate: Date) {
                 date: { gte: startDate, lte: endDate },
             },
             select: { date: true },
-        }),
-        prisma.holiday.findMany({
-            where: {
-                date: { gte: startDate, lte: endDate },
-            },
         })
     ]);
 
@@ -62,14 +74,7 @@ export async function getBookedSlots(startDate: Date, endDate: Date) {
         ...blockedSlots.map((b: { date: Date }) => b.date.toISOString()),
     ];
 
-    return {
-        booked,
-        exceptions: holidayData.map(h => ({
-            date: h.date.toISOString(),
-            isHoliday: h.isHoliday,
-            name: h.name
-        }))
-    };
+    return { booked };
 }
 
 export async function createAppointment(formData: {

@@ -121,34 +121,33 @@ export default function AdminDashboard() {
                 <p className="text-sm md:text-xl text-gray-400 font-bold font-mono tracking-tight uppercase">Driveshaft Management Command Center</p>
             </header>
 
-            {/* Stats Cards / Filters */}
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-4">
+            {/* Bento Grid Showcase for Stats */}
+            <div className="grid grid-cols-4 md:grid-cols-5 gap-3 md:gap-4 mb-10">
                 {[
-                    { id: "PENDING", label: "Pending", color: "bg-yellow-500", icon: AlertCircle },
-                    { id: "CONFIRMED", label: "Confirmed", color: "bg-blue-600", icon: CheckCircle },
-                    { id: "COMPLETED", label: "Completed", color: "bg-green-500", icon: Package },
-                    { id: "CANCELLED", label: "Cancelled", color: "bg-red-500", icon: X },
-                    { id: null, label: "Total", color: "bg-brand-gray", icon: CalendarIcon },
+                    { id: "PENDING", label: "PENDING", color: "from-yellow-500/20 to-yellow-600/5", icon: AlertCircle, iconColor: "text-yellow-500", size: "col-span-2" },
+                    { id: "CONFIRMED", label: "CONFIRMED", color: "from-blue-500/20 to-blue-600/5", icon: CheckCircle, iconColor: "text-blue-500", size: "col-span-2" },
+                    { id: "COMPLETED", label: "COMPLETED", color: "from-emerald-500/20 to-emerald-600/5", icon: Package, iconColor: "text-emerald-500", size: "col-span-2" },
+                    { id: "CANCELLED", label: "CANCELLED", color: "from-rose-500/20 to-rose-600/5", icon: X, iconColor: "text-rose-500", size: "col-span-2" },
+                    { id: null, label: "TOTAL_LOAD", color: "from-brand-gray/20 to-brand-gray/5", icon: CalendarIcon, iconColor: "text-white", size: "col-span-4 md:col-span-1" },
                 ].map((stat) => (
                     <button
                         key={stat.label}
                         onClick={() => setStatusFilter(stat.id)}
-                        className={`p-3 md:p-6 rounded-xl md:rounded-2xl shadow-lg border transition-all flex items-center justify-between group relative overflow-hidden ${statusFilter === stat.id
-                            ? "bg-white border-brand-orange ring-1 ring-brand-orange/20"
-                            : "bg-white border-gray-100 hover:border-gray-200"
-                            } ${stat.label === "Total" ? "col-span-2 md:col-span-1" : ""}`}
+                        className={`p-4 rounded-3xl border border-white/5 transition-all duration-500 group relative overflow-hidden backdrop-blur-md bg-gradient-to-br ${stat.color} ${stat.size} ${statusFilter === stat.id
+                            ? "ring-2 ring-brand-orange/40 scale-[0.98] border-brand-orange/20"
+                            : "hover:scale-[1.02] hover:border-white/10"
+                            }`}
                     >
-                        {statusFilter === stat.id && (
-                            <div className="absolute left-0 top-0 bottom-0 w-1 bg-brand-orange animate-pulse"></div>
-                        )}
-                        <div className="text-left">
-                            <p className="text-[7px] md:text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-0.5 font-mono">{stat.label}</p>
-                            <p className="text-xl md:text-4xl font-black text-brand-gray tracking-tighter font-mono leading-none">
+                        <div className="absolute inset-0 bg-white/[0.02] opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                        <div className="relative flex flex-col justify-between h-full">
+                            <div className="flex items-center justify-between mb-2">
+                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest font-mono">{stat.label}</p>
+                                <stat.icon size={14} className={`${stat.iconColor} opacity-50 group-hover:opacity-100 transition-opacity`} />
+                            </div>
+                            <p className="text-3xl md:text-4xl font-black text-brand-gray tracking-tighter font-mono leading-none flex items-baseline gap-1">
                                 {String(stat.id ? appointments.filter(e => e.extendedProps.status === stat.id).length : appointments.length).padStart(2, '0')}
+                                <span className="text-xs text-gray-400 font-normal">units</span>
                             </p>
-                        </div>
-                        <div className={`w-7 h-7 md:w-10 md:h-10 ${stat.color} rounded-lg md:rounded-xl flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform shrink-0`}>
-                            <stat.icon size={14} className="md:w-5 md:h-5" />
                         </div>
                     </button>
                 ))}
@@ -157,12 +156,13 @@ export default function AdminDashboard() {
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-10 items-start">
                 {/* Left: Calendar (2/3) */}
                 <div className="xl:col-span-2 flex flex-col xl:sticky xl:top-32">
-                    <div className="bg-white p-4 md:p-8 rounded-[2rem] shadow-2xl border border-gray-100 flex-1 relative overflow-hidden flex flex-col">
+                    <div className="bg-white/70 backdrop-blur-xl p-4 md:p-8 rounded-[2.5rem] shadow-2xl border border-white flex-1 relative overflow-hidden flex flex-col group">
+                        <div className="absolute -top-24 -left-24 w-64 h-64 bg-brand-orange/5 blur-[100px] rounded-full group-hover:bg-brand-orange/10 transition-all duration-1000 pointer-events-none"></div>
                         <div className="absolute top-0 right-0 p-4 hidden md:block">
                             <div className="w-2 h-2 bg-brand-orange rounded-full animate-ping"></div>
                         </div>
-                        <h2 className="text-lg md:text-xl font-black text-brand-gray mb-6 md:mb-8 flex items-center gap-3 font-mono uppercase tracking-tighter">
-                            <span className="text-brand-orange">//</span> SCHEDULING_MATRIX
+                        <h2 className="text-lg md:text-xl font-black text-brand-gray mb-6 md:mb-8 flex items-center gap-3 font-mono uppercase tracking-widest">
+                            <span className="text-brand-orange block w-1 h-4 bg-brand-orange rounded-full"></span> SCHEDULING_MATRIX
                         </h2>
                         <div className="flex-1 min-h-[500px] md:min-h-[700px] flex flex-col">
                             {/* Custom Header */}
