@@ -238,8 +238,31 @@ export async function cancelAppointment(id: string) {
         data: { status: "CANCELLED" },
     });
 
-    revalidatePath("/booking");
     revalidatePath("/my-bookings");
     revalidatePath("/admin");
     return updated;
+}
+
+export async function getUserWarranties() {
+    const session = await auth();
+    if (!session?.user?.id) return [];
+
+    const now = new Date();
+
+    return await prisma.appointment.findMany({
+        where: {
+            userId: session.user.id,
+            status: "COMPLETED",
+            warrantyUntil: {
+                gt: now
+            }
+        },
+        include: {
+            service: true,
+            vehicle: true
+        },
+        orderBy: {
+            warrantyUntil: "desc"
+        }
+    });
 }

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Settings, UserCircle, LogOut, ShieldCheck, CalendarClock } from "lucide-react";
 import { useSession, signOut } from "next-auth/react";
 
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useEffect } from "react";
 import WarrantyLookupDialog from "./WarrantyLookupDialog";
 
@@ -15,6 +15,7 @@ export default function Navbar() {
     const { settings } = useSettings();
     const { data: session } = useSession();
     const router = useRouter();
+    const searchParams = useSearchParams();
     const [isWarrantyDialogOpen, setIsWarrantyDialogOpen] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
 
@@ -36,7 +37,8 @@ export default function Navbar() {
 
     const { isLiff } = useLiff();
 
-    if (isLiff) return null;
+    // Hide if in LIFF or if view=frame (manual override)
+    if (isLiff || searchParams.get("view") === "frame") return null;
 
     return (
         <nav className="fixed top-2 left-2 right-2 md:top-4 md:left-4 md:right-4 bg-brand-gray/80 backdrop-blur-xl text-white py-3 px-4 md:py-4 md:px-12 flex items-center justify-between z-50 rounded-2xl border border-white/10 shadow-2xl">

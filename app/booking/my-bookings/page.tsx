@@ -10,11 +10,21 @@ import { getUserBookings, cancelAppointment } from "../actions";
 import { toast } from "react-hot-toast";
 import ConfirmModal from "@/components/ConfirmModal";
 import { useSettings } from "@/hooks/useSettings";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 export default function MyBookingsPage() {
     const { settings } = useSettings();
+    const { data: session, status } = useSession();
+    const router = useRouter();
     const [bookings, setBookings] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        if (status === "unauthenticated") {
+            router.push("/login?callbackUrl=/booking/my-bookings");
+        }
+    }, [status, router]);
     const [cancellingId, setCancellingId] = useState<string | null>(null);
     const [isConfirmOpen, setIsConfirmOpen] = useState(false);
     const [selectedBookingId, setSelectedBookingId] = useState<string | null>(null);
@@ -57,7 +67,7 @@ export default function MyBookingsPage() {
         }
     };
 
-    if (loading) {
+    if (status === "loading" || loading) {
         return (
             <main className="min-h-screen bg-brand-light-gray">
                 <Navbar />
@@ -67,6 +77,8 @@ export default function MyBookingsPage() {
             </main>
         );
     }
+
+    if (!session) return null; // Wait for redirect
 
     return (
         <main className="min-h-screen bg-brand-light-gray pb-20">

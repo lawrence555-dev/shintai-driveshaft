@@ -11,11 +11,33 @@ import { validateLicensePlate, validatePhone } from "@/lib/validation";
 import { Select, SelectTrigger, SelectContent, SelectItem } from "@/components/ui/Select";
 import { Calendar, Clock, Car, ChevronRight, ChevronLeft, CheckCircle2, AlertCircle, Phone, Hash, Wrench, Info, X, MessageCircle } from "lucide-react";
 import { createAppointment, getServices, getBookedSlots, getGlobalDateExceptions } from "./actions";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { Loader2 } from "lucide-react";
 import { useSettings } from "@/hooks/useSettings";
 
 export default function BookingPage() {
     const { settings } = useSettings();
+    const { data: session, status } = useSession();
+    const router = useRouter();
     const searchParams = useSearchParams();
+
+    useEffect(() => {
+        if (status === "unauthenticated") {
+            router.push("/login?callbackUrl=/booking");
+        }
+    }, [status, router]);
+
+    if (status === "loading") {
+        return (
+            <main className="min-h-screen bg-brand-light-gray flex items-center justify-center">
+                <Loader2 className="w-12 h-12 animate-spin text-brand-orange" />
+            </main>
+        );
+    }
+
+    // Safety check mostly for TypeScript, useEffect handles redirect
+    if (!session) return null;
     const [step, setStep] = useState(1);
     const [selectedDate, setSelectedDate] = useState<Date | null>(null);
     const [selectedSlot, setSelectedSlot] = useState<TimeSlot | null>(null);
