@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { auth } from "@/auth";
 
 export async function GET() {
     try {
@@ -28,6 +29,12 @@ export async function GET() {
 
 export async function PATCH(req: Request) {
     try {
+        const session = await auth();
+        // @ts-ignore
+        if (session?.user?.role !== "ADMIN") {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
         const body = await req.json();
         const { businessName, phoneNumber, address, slotDuration, lineNotifyToken, lineOfficialAccountUrl } = body;
 

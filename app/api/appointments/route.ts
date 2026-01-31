@@ -1,15 +1,23 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { auth } from "@/auth";
 
 export async function GET() {
     try {
+        const session = await auth();
+        // @ts-ignore
+        if (session?.user?.role !== "ADMIN") {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
         const appointments = await prisma.appointment.findMany({
             include: {
-                user: true,
-                service: true,
+                user: { select: { name: true, email: true, image: true } },
+                service: true
             },
-            orderBy: { date: "asc" },
+            orderBy: { date: "desc" },
         });
+
         return NextResponse.json(appointments);
     } catch (error) {
         console.error("獲取預約失敗:", error);

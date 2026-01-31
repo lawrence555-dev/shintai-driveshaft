@@ -1,13 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { auth } from "@/auth";
 
 export async function PATCH(
-    request: NextRequest,
-    { params }: { params: Promise<{ id: string }> }
+    req: Request,
+    { params }: { params: { id: string } }
 ) {
     try {
-        const { status, actualDuration } = await request.json();
-        const { id } = await params;
+        const session = await auth();
+        // @ts-ignore
+        if (session?.user?.role !== "ADMIN") {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
+        const { id } = params;
+        const { status, actualDuration } = await req.json();
 
         let warrantyUntil = undefined;
         if (status === "COMPLETED") {
