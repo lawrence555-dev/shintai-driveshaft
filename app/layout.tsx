@@ -31,6 +31,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 import Providers from "@/components/Providers";
+import { LiffProvider } from "@/components/providers/LiffProvider";
 
 export default function RootLayout({
   children,
@@ -44,7 +45,9 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         <Providers>
-          {children}
+          <LiffProvider>
+            {children}
+          </LiffProvider>
         </Providers>
       </body>
     </html>

@@ -9,6 +9,7 @@ import { useState, useEffect } from "react";
 import WarrantyLookupDialog from "./WarrantyLookupDialog";
 
 import { useSettings } from "@/hooks/useSettings";
+import { useLiff } from "@/components/providers/LiffProvider";
 
 export default function Navbar() {
     const { settings } = useSettings();
@@ -32,6 +33,10 @@ export default function Navbar() {
             router.push("/booking");
         }
     };
+
+    const { isLiff } = useLiff();
+
+    if (isLiff) return null;
 
     return (
         <nav className="fixed top-2 left-2 right-2 md:top-4 md:left-4 md:right-4 bg-brand-gray/80 backdrop-blur-xl text-white py-3 px-4 md:py-4 md:px-12 flex items-center justify-between z-50 rounded-2xl border border-white/10 shadow-2xl">

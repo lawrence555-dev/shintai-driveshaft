@@ -15,6 +15,7 @@
     "@fullcalendar/interaction": "^6.1.20",
     "@fullcalendar/react": "^6.1.20",
     "@fullcalendar/timegrid": "^6.1.20",
+    "@line/liff": "^2.27.3",
     "@prisma/client": "^5.22.0",
     "@radix-ui/react-select": "^2.2.6",
     "date-fns": "^4.1.0",
