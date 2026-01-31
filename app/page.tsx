@@ -10,8 +10,18 @@ import Contact from "@/components/Contact";
 import CTA from "@/components/CTA";
 import { useSettings } from "@/hooks/useSettings";
 
+import { useLiff } from "@/components/providers/LiffProvider";
+import BookingSkeleton from "@/components/skeletons/BookingSkeleton";
+
 export default function Home() {
   const { settings } = useSettings();
+  const { isLiff, isInitialized } = useLiff();
+
+  // In LIFF mode, we want to bypass the marketing homepage entirely.
+  // We show the skeleton while redirecting or if the user lands here by mistake.
+  if (!isInitialized || isLiff) {
+    return <BookingSkeleton />;
+  }
 
   return (
     <main className="min-h-screen bg-white">
