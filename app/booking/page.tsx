@@ -70,16 +70,10 @@ function BookingContent() {
 
     const availableDates = getAvailableDates(30);
 
-    // Initial Loading State or Unauthenticated (while redirecting)
-    if (status === "loading" || status === "unauthenticated") {
-        return <LoadingSplash message="系統載入中..." />;
-    }
-
-    // Auth Check (Strict)
-    if (!session) return null;
-
     // Fetch Initial Data
     useEffect(() => {
+        if (status !== 'authenticated') return;
+
         const fetchServices = async () => {
             try {
                 const data = await getServices();
@@ -112,10 +106,12 @@ function BookingContent() {
         if (type === "inspection") {
             setCarModel("[專業檢查] ");
         }
-    }, [searchParams]);
+    }, [searchParams, status]);
 
     // Fetch Month Data
     useEffect(() => {
+        if (status !== 'authenticated') return;
+
         const fetchMonthData = async () => {
             const monthKey = format(currentMonth, "yyyy-MM");
             if (monthCache.current[monthKey]) {
@@ -135,7 +131,7 @@ function BookingContent() {
             }
         };
         fetchMonthData();
-    }, [currentMonth]);
+    }, [currentMonth, status]);
 
     const isSlotBooked = (date: Date, slot: TimeSlot) => {
         const slotDateTime = getSlotDateTime(date, slot);
@@ -169,6 +165,14 @@ function BookingContent() {
             setIsSubmitting(false);
         }
     };
+
+    // Initial Loading State or Unauthenticated (while redirecting)
+    if (status === "loading" || status === "unauthenticated") {
+        return <LoadingSplash message="系統載入中..." />;
+    }
+
+    // Auth Check
+    if (!session) return null;
 
     if (isSuccess) {
         return (
@@ -210,6 +214,9 @@ function BookingContent() {
 
     return (
         <main className="min-h-screen bg-brand-light-gray">
+            {/* Conditionally render Navbar based on parent logic */}
+            {!shouldHideNavbar && <Navbar />}
+
             {/* Conditionally render Navbar based on parent logic */}
             {!shouldHideNavbar && <Navbar />}
 
