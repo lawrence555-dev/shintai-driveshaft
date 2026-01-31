@@ -2,6 +2,7 @@ import NextAuth from "next-auth";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@/lib/prisma";
 import Google from "next-auth/providers/google";
+import Line from "next-auth/providers/line";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
     adapter: PrismaAdapter(prisma),
@@ -12,9 +13,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             clientId: process.env.GOOGLE_CLIENT_ID,
             clientSecret: process.env.GOOGLE_CLIENT_SECRET,
         }),
+        Line({
+            clientId: process.env.LINE_CLIENT_ID,
+            clientSecret: process.env.LINE_CLIENT_SECRET,
+            checks: ["state"], // LINE usually requires state check or disables PKCE if not supported, but v5 defaults are usually good. 'state' is safe.
+        }),
     ],
     pages: {
-        signIn: "/",
+        signIn: "/login",
     },
     session: { strategy: "jwt" },
     callbacks: {

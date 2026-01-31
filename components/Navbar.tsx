@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Settings, UserCircle, LogOut, ShieldCheck, CalendarClock } from "lucide-react";
-import { useSession, signIn, signOut } from "next-auth/react";
+import { useSession, signOut } from "next-auth/react";
 
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
@@ -27,7 +27,7 @@ export default function Navbar() {
     const handleBooking = (e: React.MouseEvent) => {
         e.preventDefault();
         if (!session) {
-            signIn("google", { redirectTo: "/booking" });
+            router.push("/login?callbackUrl=/booking");
         } else {
             router.push("/booking");
         }
@@ -99,7 +99,7 @@ export default function Navbar() {
                         </div>
                     ) : (
                         <button
-                            onClick={() => signIn("google", { redirectTo: "/" })}
+                            onClick={() => router.push("/login")}
                             className="flex items-center space-x-2 text-gray-300 hover:text-white transition-colors group"
                         >
                             <UserCircle size={22} className="group-hover:text-brand-orange transition-colors" />
