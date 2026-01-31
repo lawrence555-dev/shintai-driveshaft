@@ -8,12 +8,14 @@ interface LiffContextType {
     isLiff: boolean;
     liffError: string | null;
     profile: any | null;
+    isInitialized: boolean;
 }
 
 const LiffContext = createContext<LiffContextType>({
     isLiff: false,
     liffError: null,
     profile: null,
+    isInitialized: false,
 });
 
 export const useLiff = () => useContext(LiffContext);
@@ -23,6 +25,8 @@ export function LiffProvider({ children }: { children: ReactNode }) {
     const [isLiff, setIsLiff] = useState(false);
     const [liffError, setLiffError] = useState<string | null>(null);
     const [profile, setProfile] = useState<any | null>(null);
+
+    const [isInitialized, setIsInitialized] = useState(false);
 
     useEffect(() => {
         let isMounted = true;
@@ -34,18 +38,23 @@ export function LiffProvider({ children }: { children: ReactNode }) {
 
                 if (!liffId) {
                     console.warn("LIFF ID not found in environment variables");
+                    setIsInitialized(true);
                     return;
                 }
 
                 // Prevent multiple inits if already initialized
                 if (liff.id) {
-                    if (isMounted) setIsLiff(liff.isInClient());
+                    if (isMounted) {
+                        setIsLiff(liff.isInClient());
+                        setIsInitialized(true);
+                    }
                     return;
                 }
 
                 await liff.init({ liffId });
 
                 if (isMounted) {
+                    setIsInitialized(true);
                     if (liff.isInClient() || navigator.userAgent.includes("LIFF")) {
                         console.log("LIFF environment detected");
                         setIsLiff(true);
@@ -69,7 +78,10 @@ export function LiffProvider({ children }: { children: ReactNode }) {
                 }
             } catch (error: any) {
                 console.error("LIFF init failed", error);
-                if (isMounted) setLiffError(error.toString());
+                if (isMounted) {
+                    setLiffError(error.toString());
+                    setIsInitialized(true);
+                }
             }
         };
 
@@ -87,7 +99,7 @@ export function LiffProvider({ children }: { children: ReactNode }) {
     }, [status]);
 
     return (
-        <LiffContext.Provider value={{ isLiff, liffError, profile }}>
+        <LiffContext.Provider value={{ isLiff, liffError, profile, isInitialized }}>
             {children}
         </LiffContext.Provider>
     );

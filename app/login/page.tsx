@@ -15,7 +15,7 @@ function LoginContent() {
     const searchParams = useSearchParams();
     const [isLoading, setIsLoading] = useState<"google" | "line" | null>(null);
     const [error, setError] = useState<string | null>(null);
-    const { isLiff } = useLiff();
+    const { isLiff, isInitialized } = useLiff();
 
     const callbackUrl = searchParams.get("callbackUrl") || "/";
     const urlError = searchParams.get("error");
@@ -53,8 +53,9 @@ function LoginContent() {
         }
     };
 
-    // If auto-logging in or just LIFF mode (to look integrated), show Skeleton instead of form
-    if (isLiff) {
+    // If initializing (checking if LIFF) or if it IS LIFF (auto-login proceeding),
+    // show Skeleton to prevent Flash of content.
+    if (!isInitialized || isLiff) {
         return <LoginSkeleton />;
     }
 
