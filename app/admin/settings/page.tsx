@@ -10,6 +10,7 @@ interface Settings {
     address: string;
     slotDuration: number;
     lineNotifyToken: string | null;
+    lineOfficialAccountUrl: string | null;
 }
 
 export default function SystemSettings() {
