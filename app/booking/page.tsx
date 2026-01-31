@@ -1,7 +1,7 @@
 "use client";
 export const dynamic = 'force-dynamic';
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, Suspense } from "react";
 import Navbar from "@/components/Navbar";
 import { useSearchParams } from "next/navigation";
 import { format, isSameDay, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, isSameMonth, addMonths, subMonths, isToday as isTodayFns, startOfDay, endOfDay } from "date-fns";
@@ -16,28 +16,33 @@ import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { useSettings } from "@/hooks/useSettings";
 
-export default function BookingPage() {
+function BookingContent() {
     const { settings } = useSettings();
     const { data: session, status } = useSession();
     const router = useRouter();
     const searchParams = useSearchParams();
 
+    // Persist query params (like view=frame) during redirect
     useEffect(() => {
         if (status === "unauthenticated") {
-            router.push("/login?callbackUrl=/booking");
+            const currentParams = new URLSearchParams(Array.from(searchParams.entries()));
+            currentParams.delete("callbackUrl"); // Avoid nesting
+
+            // Construct the return URL with current params
+            const returnUrl = `/booking?${currentParams.toString()}`;
+
+            // Construct login URL ensuring view param is passed if present
+            const loginUrl = new URL("/login", window.location.origin);
+            loginUrl.searchParams.set("callbackUrl", returnUrl);
+
+            if (currentParams.has("view")) {
+                loginUrl.searchParams.set("view", currentParams.get("view")!);
+            }
+
+            router.push(loginUrl.toString());
         }
-    }, [status, router]);
+    }, [status, router, searchParams]);
 
-    if (status === "loading") {
-        return (
-            <main className="min-h-screen bg-brand-light-gray flex items-center justify-center">
-                <Loader2 className="w-12 h-12 animate-spin text-brand-orange" />
-            </main>
-        );
-    }
-
-    // Safety check mostly for TypeScript, useEffect handles redirect
-    if (!session) return null;
     const [step, setStep] = useState(1);
     const [selectedDate, setSelectedDate] = useState<Date | null>(null);
     const [selectedSlot, setSelectedSlot] = useState<TimeSlot | null>(null);
@@ -55,11 +60,24 @@ export default function BookingPage() {
     const [phoneError, setPhoneError] = useState<string | null>(null);
     const [currentMonth, setCurrentMonth] = useState(new Date());
     const [isSlotModalOpen, setIsSlotModalOpen] = useState(false);
-    const [globalExceptions, setGlobalExceptions] = useState<any[]>([]); // New global cache
+    const [globalExceptions, setGlobalExceptions] = useState<any[]>([]);
     const monthCache = useRef<Record<string, { booked: string[] }>>({});
 
     const availableDates = getAvailableDates(30);
 
+    // Initial Loading State
+    if (status === "loading") {
+        return (
+            <main className="min-h-screen bg-brand-light-gray flex items-center justify-center">
+                <Loader2 className="w-12 h-12 animate-spin text-brand-orange" />
+            </main>
+        );
+    }
+
+    // Auth Check
+    if (!session) return null;
+
+    // Fetch Initial Data
     useEffect(() => {
         const fetchServices = async () => {
             try {
@@ -79,7 +97,6 @@ export default function BookingPage() {
         };
         fetchServices();
 
-        // New: Fetch global holiday cache ONCE on mount
         const fetchGlobalExceptions = async () => {
             try {
                 const data = await getGlobalDateExceptions();
@@ -96,7 +113,7 @@ export default function BookingPage() {
         }
     }, [searchParams]);
 
-    // Fetch booked slots when month changes (Holidays are now instant from globalExceptions)
+    // Fetch Month Data
     useEffect(() => {
         const fetchMonthData = async () => {
             const monthKey = format(currentMonth, "yyyy-MM");
@@ -110,7 +127,6 @@ export default function BookingPage() {
                 const monthEnd = endOfMonth(currentMonth);
                 const data = await getBookedSlots(monthStart, monthEnd);
 
-                // Update cache and state
                 monthCache.current[monthKey] = data;
                 setBookedSlots(data.booked);
             } catch (err) {
@@ -565,5 +581,17 @@ export default function BookingPage() {
                 )
             }
         </main >
+    );
+}
+
+export default function BookingPage() {
+    return (
+        <Suspense fallback={
+            <main className="min-h-screen bg-brand-light-gray flex items-center justify-center">
+                <Loader2 className="w-12 h-12 animate-spin text-brand-orange" />
+            </main>
+        }>
+            <BookingContent />
+        </Suspense>
     );
 }

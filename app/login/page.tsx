@@ -7,6 +7,7 @@ import Image from "next/image";
 import { Loader2, AlertCircle } from "lucide-react";
 import Link from "next/link";
 import { useSettings } from "@/hooks/useSettings";
+import { useLiff } from "@/components/providers/LiffProvider";
 
 export default function LoginPage() {
     const { settings } = useSettings();
@@ -27,6 +28,15 @@ export default function LoginPage() {
         }
     }, [urlError]);
 
+    const { isLiff } = useLiff();
+
+    useEffect(() => {
+        if (isLiff && !isLoading) {
+            console.log("LoginPage: LIFF detected, auto-clicking LINE login...");
+            handleLogin("line");
+        }
+    }, [isLiff]);
+
     const handleLogin = async (provider: "google" | "line") => {
         setIsLoading(provider);
         setError(null);
@@ -39,6 +49,7 @@ export default function LoginPage() {
         }
     };
 
+
     return (
         <div className="min-h-screen w-full flex items-center justify-center relative overflow-hidden bg-[#0f172a]">
             {/* Background Effects */}
@@ -48,7 +59,15 @@ export default function LoginPage() {
             </div>
 
             <div className="relative z-10 w-full max-w-md px-6">
-                <div className="bg-white/10 backdrop-blur-xl border border-white/20 shadow-2xl rounded-3xl p-8 md:p-12 overflow-hidden">
+                {/* Auto-login Feedback Shield */}
+                {isLiff && isLoading === "line" && (
+                    <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-[#0f172a] rounded-3xl">
+                        <Loader2 className="w-12 h-12 text-[#06C755] animate-spin mb-4" />
+                        <p className="text-white font-bold text-lg animate-pulse">正在透過 LINE 登入...</p>
+                    </div>
+                )}
+
+                <div className="bg-white/10 backdrop-blur-xl border border-white/20 shadow-2xl rounded-3xl p-8 md:p-12 overflow-hidden relative">
 
                     {/* Header */}
                     <div className="text-center mb-10">

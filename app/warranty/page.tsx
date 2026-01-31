@@ -1,24 +1,36 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import Navbar from "@/components/Navbar";
 import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ShieldCheck, Calendar, Car, AlertCircle, Loader2 } from "lucide-react";
 import { getUserWarranties } from "@/app/booking/actions";
 import { format, differenceInMonths, differenceInDays } from "date-fns";
 import { zhTW } from "date-fns/locale";
 import Footer from "@/components/Footer";
 
-export default function WarrantyPage() {
+function WarrantyContent() {
     const { data: session, status } = useSession();
     const router = useRouter();
+    const searchParams = useSearchParams();
     const [warranties, setWarranties] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         if (status === "unauthenticated") {
-            router.push("/login?callbackUrl=/warranty");
+            const currentParams = new URLSearchParams(Array.from(searchParams.entries()));
+            currentParams.delete("callbackUrl");
+
+            const returnUrl = `/warranty?${currentParams.toString()}`;
+            const loginUrl = new URL("/login", window.location.origin);
+            loginUrl.searchParams.set("callbackUrl", returnUrl);
+
+            if (currentParams.has("view")) {
+                loginUrl.searchParams.set("view", currentParams.get("view")!);
+            }
+
+            router.push(loginUrl.toString());
         } else if (status === "authenticated") {
             const fetchData = async () => {
                 try {
@@ -32,7 +44,7 @@ export default function WarrantyPage() {
             };
             fetchData();
         }
-    }, [status, router]);
+    }, [status, router, searchParams]);
 
     if (status === "loading" || (status === "authenticated" && loading)) {
         return (
@@ -152,5 +164,17 @@ export default function WarrantyPage() {
 
             <Footer />
         </main>
+    );
+}
+
+export default function WarrantyPage() {
+    return (
+        <Suspense fallback={
+            <main className="min-h-screen bg-brand-light-gray flex items-center justify-center">
+                <Loader2 className="w-12 h-12 animate-spin text-brand-orange" />
+            </main>
+        }>
+            <WarrantyContent />
+        </Suspense>
     );
 }

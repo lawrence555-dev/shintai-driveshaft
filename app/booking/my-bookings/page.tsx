@@ -1,7 +1,7 @@
 "use client";
 export const dynamic = 'force-dynamic';
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import Navbar from "@/components/Navbar";
 import { format } from "date-fns";
 import { zhTW } from "date-fns/locale";
@@ -11,20 +11,33 @@ import { toast } from "react-hot-toast";
 import ConfirmModal from "@/components/ConfirmModal";
 import { useSettings } from "@/hooks/useSettings";
 import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
-export default function MyBookingsPage() {
+function MyBookingsContent() {
     const { settings } = useSettings();
     const { data: session, status } = useSession();
     const router = useRouter();
+    const searchParams = useSearchParams();
     const [bookings, setBookings] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         if (status === "unauthenticated") {
-            router.push("/login?callbackUrl=/booking/my-bookings");
+            const currentParams = new URLSearchParams(Array.from(searchParams.entries()));
+            currentParams.delete("callbackUrl");
+
+            const returnUrl = `/booking/my-bookings?${currentParams.toString()}`;
+            const loginUrl = new URL("/login", window.location.origin);
+            loginUrl.searchParams.set("callbackUrl", returnUrl);
+
+            if (currentParams.has("view")) {
+                loginUrl.searchParams.set("view", currentParams.get("view")!);
+            }
+
+            router.push(loginUrl.toString());
         }
-    }, [status, router]);
+    }, [status, router, searchParams]);
+
     const [cancellingId, setCancellingId] = useState<string | null>(null);
     const [isConfirmOpen, setIsConfirmOpen] = useState(false);
     const [selectedBookingId, setSelectedBookingId] = useState<string | null>(null);
@@ -42,8 +55,10 @@ export default function MyBookingsPage() {
     };
 
     useEffect(() => {
-        fetchBookings();
-    }, []);
+        if (session) {
+            fetchBookings();
+        }
+    }, [session]);
 
     const handleCancelClick = (id: string) => {
         setSelectedBookingId(id);
@@ -214,5 +229,17 @@ function Wrench({ size, className }: { size: number, className: string }) {
         >
             <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
         </svg>
+    );
+}
+
+export default function MyBookingsPage() {
+    return (
+        <Suspense fallback={
+            <main className="min-h-screen bg-brand-light-gray flex items-center justify-center">
+                <Loader2 className="w-12 h-12 animate-spin text-brand-orange" />
+            </main>
+        }>
+            <MyBookingsContent />
+        </Suspense>
     );
 }
