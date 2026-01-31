@@ -9,8 +9,8 @@ import { getUserWarranties } from "@/app/booking/actions";
 import { format, differenceInMonths, differenceInDays } from "date-fns";
 import { zhTW } from "date-fns/locale";
 import Footer from "@/components/Footer";
-import LoadingSplash from "@/components/LoadingSplash";
 import { useLiff } from "@/components/providers/LiffProvider";
+import BookingSkeleton from "@/components/skeletons/BookingSkeleton";
 
 function WarrantyContent() {
     const { data: session, status } = useSession();
@@ -55,7 +55,12 @@ function WarrantyContent() {
 
     // Initial Loading State or Unauthenticated (while redirecting)
     if (status === "loading" || status === "unauthenticated" || (status === "authenticated" && loading)) {
-        return <LoadingSplash message="保固資料讀取中..." />;
+        return (
+            <>
+                {!shouldHideNavbar && <Navbar />}
+                <BookingSkeleton />
+            </>
+        );
     }
 
     if (!session) return null;
@@ -169,7 +174,7 @@ function WarrantyContent() {
 
 export default function WarrantyPage() {
     return (
-        <Suspense fallback={<LoadingSplash message="載入中..." />}>
+        <Suspense fallback={<BookingSkeleton />}>
             <WarrantyContent />
         </Suspense>
     );

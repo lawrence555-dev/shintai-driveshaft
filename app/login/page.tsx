@@ -6,7 +6,8 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useSettings } from "@/hooks/useSettings";
 import { useLiff } from "@/components/providers/LiffProvider";
-import LoadingSplash from "@/components/LoadingSplash"; // Updated import
+import LoginSkeleton from "@/components/skeletons/LoginSkeleton";
+
 import { Loader2, AlertCircle } from "lucide-react";
 
 function LoginContent() {
@@ -52,9 +53,9 @@ function LoginContent() {
         }
     };
 
-    // If auto-logging in, show Splash instead of form
-    if (isLiff && isLoading === "line") {
-        return <LoadingSplash message="正在透過 LINE 登入..." />;
+    // If auto-logging in or just LIFF mode (to look integrated), show Skeleton instead of form
+    if (isLiff) {
+        return <LoginSkeleton />;
     }
 
     return (
@@ -160,7 +161,7 @@ function LoginContent() {
 
 export default function LoginPage() {
     return (
-        <Suspense fallback={<LoadingSplash message="載入中..." />}>
+        <Suspense fallback={<LoginSkeleton />}>
             <LoginContent />
         </Suspense>
     );
