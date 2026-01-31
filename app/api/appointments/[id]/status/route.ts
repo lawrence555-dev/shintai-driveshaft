@@ -4,7 +4,7 @@ import { auth } from "@/auth";
 
 export async function PATCH(
     req: Request,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
         const session = await auth();
@@ -13,7 +13,7 @@ export async function PATCH(
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
-        const { id } = params;
+        const { id } = await params; // Await params to get the id
         const { status, actualDuration } = await req.json();
 
         let warrantyUntil = undefined;
