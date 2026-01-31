@@ -14,6 +14,7 @@ import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import LoadingSplash from "@/components/LoadingSplash";
 import { useLiff } from "@/components/providers/LiffProvider";
+import BookingSkeleton from "@/components/skeletons/BookingSkeleton";
 
 function MyBookingsContent() {
     const { settings } = useSettings();
@@ -91,7 +92,12 @@ function MyBookingsContent() {
 
     // Initial Loading State or Unauthenticated (while redirecting)
     if (status === "loading" || status === "unauthenticated" || (status === "authenticated" && loading)) {
-        return <LoadingSplash message="預約紀錄讀取中..." />;
+        return (
+            <>
+                {!shouldHideNavbar && <Navbar />}
+                <BookingSkeleton />
+            </>
+        );
     }
 
     if (!session) return null; // Wait for redirect
@@ -235,7 +241,7 @@ function Wrench({ size, className }: { size: number, className: string }) {
 
 export default function MyBookingsPage() {
     return (
-        <Suspense fallback={<LoadingSplash message="系統載入中..." />}>
+        <Suspense fallback={<BookingSkeleton />}>
             <MyBookingsContent />
         </Suspense>
     );
