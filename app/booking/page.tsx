@@ -16,6 +16,7 @@ import { useRouter } from "next/navigation";
 import { useSettings } from "@/hooks/useSettings";
 import LoadingSplash from "@/components/LoadingSplash";
 import { useLiff } from "@/components/providers/LiffProvider";
+import BookingSkeleton from "@/components/skeletons/BookingSkeleton";
 
 function BookingContent() {
     const { settings } = useSettings();
@@ -166,9 +167,16 @@ function BookingContent() {
         }
     };
 
+
+
     // Initial Loading State or Unauthenticated (while redirecting)
     if (status === "loading" || status === "unauthenticated") {
-        return <LoadingSplash message="系統載入中..." />;
+        return (
+            <>
+                {!shouldHideNavbar && <Navbar />}
+                <BookingSkeleton />
+            </>
+        );
     }
 
     // Auth Check
@@ -603,7 +611,7 @@ function BookingContent() {
 
 export default function BookingPage() {
     return (
-        <Suspense fallback={<LoadingSplash message="系統載入中..." />}>
+        <Suspense fallback={<BookingSkeleton />}>
             <BookingContent />
         </Suspense>
     );
