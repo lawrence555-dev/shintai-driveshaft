@@ -9,6 +9,8 @@ import { getUserWarranties } from "@/app/booking/actions";
 import { format, differenceInMonths, differenceInDays } from "date-fns";
 import { zhTW } from "date-fns/locale";
 import Footer from "@/components/Footer";
+import LoadingSplash from "@/components/LoadingSplash";
+import { useLiff } from "@/components/providers/LiffProvider";
 
 function WarrantyContent() {
     const { data: session, status } = useSession();
@@ -16,6 +18,11 @@ function WarrantyContent() {
     const searchParams = useSearchParams();
     const [warranties, setWarranties] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const { isLiff } = useLiff();
+
+    // Check visibility params strictly
+    const isFrame = searchParams.get("view") === "frame";
+    const shouldHideNavbar = isLiff || isFrame;
 
     useEffect(() => {
         if (status === "unauthenticated") {
@@ -46,25 +53,18 @@ function WarrantyContent() {
         }
     }, [status, router, searchParams]);
 
-    if (status === "loading" || (status === "authenticated" && loading)) {
-        return (
-            <main className="min-h-screen bg-brand-light-gray">
-                <Navbar />
-                <div className="flex h-[80vh] items-center justify-center">
-                    <Loader2 className="w-12 h-12 animate-spin text-brand-orange" />
-                </div>
-                <Footer />
-            </main>
-        );
+    // Initial Loading State or Unauthenticated (while redirecting)
+    if (status === "loading" || status === "unauthenticated" || (status === "authenticated" && loading)) {
+        return <LoadingSplash message="保固資料讀取中..." />;
     }
 
-    if (!session) return null; // Logic handled by useEffect
+    if (!session) return null;
 
     return (
         <main className="min-h-screen bg-brand-light-gray pb-20">
-            <Navbar />
+            {!shouldHideNavbar && <Navbar />}
 
-            <div className="max-w-xl mx-auto px-6 py-28 md:py-32">
+            <div className={`max-w-xl mx-auto px-6 ${shouldHideNavbar ? 'py-6 md:py-10' : 'py-28 md:py-32'}`}>
                 <header className="mb-10 text-center">
                     <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-brand-orange/10 mb-4 text-brand-orange">
                         <ShieldCheck size={32} />
@@ -162,18 +162,14 @@ function WarrantyContent() {
                 </div>
             </div>
 
-            <Footer />
+            {!shouldHideNavbar && <Footer />}
         </main>
     );
 }
 
 export default function WarrantyPage() {
     return (
-        <Suspense fallback={
-            <main className="min-h-screen bg-brand-light-gray flex items-center justify-center">
-                <Loader2 className="w-12 h-12 animate-spin text-brand-orange" />
-            </main>
-        }>
+        <Suspense fallback={<LoadingSplash message="載入中..." />}>
             <WarrantyContent />
         </Suspense>
     );

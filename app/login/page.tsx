@@ -1,22 +1,26 @@
 "use client";
 
 import { signIn } from "next-auth/react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-import Image from "next/image";
-import { Loader2, AlertCircle } from "lucide-react";
 import Link from "next/link";
 import { useSettings } from "@/hooks/useSettings";
 import { useLiff } from "@/components/providers/LiffProvider";
+import LoadingSplash from "@/components/LoadingSplash"; // Updated import
+import { Loader2, AlertCircle } from "lucide-react";
 
-export default function LoginPage() {
+function LoginContent() {
     const { settings } = useSettings();
     const searchParams = useSearchParams();
     const [isLoading, setIsLoading] = useState<"google" | "line" | null>(null);
     const [error, setError] = useState<string | null>(null);
+    const { isLiff } = useLiff();
 
     const callbackUrl = searchParams.get("callbackUrl") || "/";
     const urlError = searchParams.get("error");
+
+    // Check for view=frame param to potentially adjust UI (though typically login page is full screen anyway)
+    // We mainly want to ensure we don't flash unnecessary elements if we are auto-logging in.
 
     useEffect(() => {
         if (urlError) {
@@ -28,14 +32,13 @@ export default function LoginPage() {
         }
     }, [urlError]);
 
-    const { isLiff } = useLiff();
-
+    // Auto-login effect
     useEffect(() => {
-        if (isLiff && !isLoading) {
+        if (isLiff && !isLoading && !urlError) {
             console.log("LoginPage: LIFF detected, auto-clicking LINE login...");
             handleLogin("line");
         }
-    }, [isLiff]);
+    }, [isLiff, urlError]);
 
     const handleLogin = async (provider: "google" | "line") => {
         setIsLoading(provider);
@@ -49,6 +52,10 @@ export default function LoginPage() {
         }
     };
 
+    // If auto-logging in, show Splash instead of form
+    if (isLiff && isLoading === "line") {
+        return <LoadingSplash message="正在透過 LINE 登入..." />;
+    }
 
     return (
         <div className="min-h-screen w-full flex items-center justify-center relative overflow-hidden bg-[#0f172a]">
@@ -59,14 +66,6 @@ export default function LoginPage() {
             </div>
 
             <div className="relative z-10 w-full max-w-md px-6">
-                {/* Auto-login Feedback Shield */}
-                {isLiff && isLoading === "line" && (
-                    <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-[#0f172a] rounded-3xl">
-                        <Loader2 className="w-12 h-12 text-[#06C755] animate-spin mb-4" />
-                        <p className="text-white font-bold text-lg animate-pulse">正在透過 LINE 登入...</p>
-                    </div>
-                )}
-
                 <div className="bg-white/10 backdrop-blur-xl border border-white/20 shadow-2xl rounded-3xl p-8 md:p-12 overflow-hidden relative">
 
                     {/* Header */}
@@ -101,7 +100,7 @@ export default function LoginPage() {
                                 <>
                                     {/* Simple Line Icon */}
                                     <svg viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
-                                        <path d="M21.16 8.35c-1.1-3.66-4.93-5.38-8.2-5.35-3.69-.04-8.08 1.63-8.89 6.27-.67 3.82 2.01 7.25 5.22 8.31.57.19.86.53.53 1.25-.09.33-.29 1.14-.54 1.76-.39.81-.69 1.94 1.22 1.34 2.89-.66 5.86-2.9 8.16-4.8 2.08-1.74 3.73-4.59 2.5-8.78zm-13.88 5h-1.33c-.15 0-.27-.12-.27-.27v-3.79c0-.15.12-.27.27-.27H6c.15 0 .27.12.27.27v3.79c-.01.16-.13.27-.28.27zm3.17 0h-1.33c-.15 0-.27-.12-.27-.27v-3.79c0-.15.12-.27.27-.27h1.33c.15 0 .27.12.27.27v3.79c0 .16-.12.27-.27.27zm4.27 0h-1.34c-.15 0-.27-.12-.27-.27v-1.87h-.01L11.5 13.2c-.06.08-.14.12-.23.12h-.03c-.09 0-.17-.04-.23-.11-.06-.06-.09-.15-.09-.23v-3.79c0-.15.12-.27.27-.27h1.33c.15 0 .27.12.27.27v1.89l1.62-2.03c.06-.08.14-.12.23-.12h.03c.09 0 .17.04.23.11.06.06.09.15.09.23v3.79c-.01.16-.13.27-.28.27zm4.22 0h-2.58c-.15 0-.27-.12-.27-.27v-3.79c0-.15.12-.27.27-.27h2.58c.15 0 .27.12.27.27.15 0 .27.12.27.27H19.2v1.27h1.44c.15 0 .27.12.27.27.15 0 .27.12.27.27H19.2v1.27h1.44c.15 0 .27.12.27.27 0 .16-.12.27-.27.27z" />
+                                        <path d="M21.16 8.35c-1.1-3.66-4.93-5.38-8.2-5.35-3.69-.04-8.08 1.63-8.89 6.27-.67 3.82 2.01 7.25 5.22 8.31.57.19.86.53.53 1.25-.09.33-.29 1.14-.54 1.76-.39.81-.69 1.94 1.22 1.34 2.89-.66 5.86-2.9 8.16-4.8 2.01-1.74 3.73-4.59 2.5-8.78zm-13.88 5h-1.33c-.15 0-.27-.12-.27-.27v-3.79c0-.15.12-.27.27-.27H6c.15 0 .27.12.27.27v3.79c-.01.16-.13.27-.28.27zm3.17 0h-1.33c-.15 0-.27-.12-.27-.27v-3.79c0-.15.12-.27.27-.27h1.33c.15 0 .27.12.27.27v3.79c0 .16-.12.27-.27.27zm4.27 0h-1.34c-.15 0-.27-.12-.27-.27v-1.87h-.01L11.5 13.2c-.06.08-.14.12-.23.12h-.03c-.09 0-.17-.04-.23-.11-.06-.06-.09-.15-.09-.23v-3.79c0-.15.12-.27.27-.27h1.33c.15 0 .27.12.27.27v1.89l1.62-2.03c.06-.08.14-.12.23-.12h.03c.09 0 .17.04.23.11.06.06.09.15.09.23v3.79c-.01.16-.13.27-.28.27zm4.22 0h-2.58c-.15 0-.27-.12-.27-.27v-3.79c0-.15.12-.27.27-.27h2.58c.15 0 .27.12.27.27.15 0 .27.12.27.27H19.2v1.27h1.44c.15 0 .27.12.27.27.15 0 .27.12.27.27H19.2v1.27h1.44c.15 0 .27.12.27.27 0 .16-.12.27-.27.27z" />
                                     </svg>
                                     <span>使用 LINE 登入</span>
                                 </>
@@ -156,5 +155,13 @@ export default function LoginPage() {
                 </div>
             </div>
         </div>
+    );
+}
+
+export default function LoginPage() {
+    return (
+        <Suspense fallback={<LoadingSplash message="載入中..." />}>
+            <LoginContent />
+        </Suspense>
     );
 }

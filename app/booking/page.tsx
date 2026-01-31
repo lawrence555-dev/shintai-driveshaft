@@ -9,18 +9,24 @@ import { zhTW } from "date-fns/locale";
 import { BOOKING_SLOTS, getAvailableDates, TimeSlot, getSlotDateTime, isSlotPassed, isDateDisabled } from "@/lib/booking-utils";
 import { validateLicensePlate, validatePhone } from "@/lib/validation";
 import { Select, SelectTrigger, SelectContent, SelectItem } from "@/components/ui/Select";
-import { Calendar, Clock, Car, ChevronRight, ChevronLeft, CheckCircle2, AlertCircle, Phone, Hash, Wrench, Info, X, MessageCircle } from "lucide-react";
+import { Calendar, Clock, Car, ChevronRight, ChevronLeft, CheckCircle2, AlertCircle, Phone, Hash, Wrench, Info, X, MessageCircle, Loader2 } from "lucide-react";
 import { createAppointment, getServices, getBookedSlots, getGlobalDateExceptions } from "./actions";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { Loader2 } from "lucide-react";
 import { useSettings } from "@/hooks/useSettings";
+import LoadingSplash from "@/components/LoadingSplash";
+import { useLiff } from "@/components/providers/LiffProvider";
 
 function BookingContent() {
     const { settings } = useSettings();
     const { data: session, status } = useSession();
     const router = useRouter();
     const searchParams = useSearchParams();
+    const { isLiff } = useLiff();
+
+    // Check visibility params strictly
+    const isFrame = searchParams.get("view") === "frame";
+    const shouldHideNavbar = isLiff || isFrame;
 
     // Persist query params (like view=frame) during redirect
     useEffect(() => {
@@ -55,7 +61,6 @@ function BookingContent() {
     const [isSuccess, setIsSuccess] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [bookedSlots, setBookedSlots] = useState<string[]>([]);
-    const [dateExceptions, setDateExceptions] = useState<any[]>([]);
     const [plateError, setPlateError] = useState<string | null>(null);
     const [phoneError, setPhoneError] = useState<string | null>(null);
     const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -65,16 +70,12 @@ function BookingContent() {
 
     const availableDates = getAvailableDates(30);
 
-    // Initial Loading State
-    if (status === "loading") {
-        return (
-            <main className="min-h-screen bg-brand-light-gray flex items-center justify-center">
-                <Loader2 className="w-12 h-12 animate-spin text-brand-orange" />
-            </main>
-        );
+    // Initial Loading State or Unauthenticated (while redirecting)
+    if (status === "loading" || status === "unauthenticated") {
+        return <LoadingSplash message="系統載入中..." />;
     }
 
-    // Auth Check
+    // Auth Check (Strict)
     if (!session) return null;
 
     // Fetch Initial Data
@@ -172,7 +173,9 @@ function BookingContent() {
     if (isSuccess) {
         return (
             <main className="min-h-screen bg-brand-light-gray">
-                <Navbar />
+                {/* Conditionally render Navbar based on parent logic */}
+                {!shouldHideNavbar && <Navbar />}
+
                 <div className="max-w-md mx-auto mt-20 p-8 bg-white rounded-2xl shadow-xl text-center">
                     <CheckCircle2 className="w-16 h-16 text-green-500 mx-auto mb-6" />
                     <h1 className="text-2xl font-bold mb-2">預約成功！</h1>
@@ -207,9 +210,10 @@ function BookingContent() {
 
     return (
         <main className="min-h-screen bg-brand-light-gray">
-            <Navbar />
+            {/* Conditionally render Navbar based on parent logic */}
+            {!shouldHideNavbar && <Navbar />}
 
-            <div className="max-w-4xl mx-auto px-6 py-28 md:py-32">
+            <div className={`max-w-4xl mx-auto px-6 ${shouldHideNavbar ? 'py-6 md:py-10' : 'py-28 md:py-32'}`}>
                 <div className="mb-12 text-center">
                     <h1 className="text-3xl font-bold text-brand-gray mb-4">預約維修服務</h1>
                     <p className="text-gray-500">請填寫以下資訊，我們將為您安排專屬修護時段</p>
@@ -586,11 +590,7 @@ function BookingContent() {
 
 export default function BookingPage() {
     return (
-        <Suspense fallback={
-            <main className="min-h-screen bg-brand-light-gray flex items-center justify-center">
-                <Loader2 className="w-12 h-12 animate-spin text-brand-orange" />
-            </main>
-        }>
+        <Suspense fallback={<LoadingSplash message="系統載入中..." />}>
             <BookingContent />
         </Suspense>
     );

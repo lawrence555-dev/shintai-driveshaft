@@ -12,6 +12,8 @@ import ConfirmModal from "@/components/ConfirmModal";
 import { useSettings } from "@/hooks/useSettings";
 import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
+import LoadingSplash from "@/components/LoadingSplash";
+import { useLiff } from "@/components/providers/LiffProvider";
 
 function MyBookingsContent() {
     const { settings } = useSettings();
@@ -20,6 +22,11 @@ function MyBookingsContent() {
     const searchParams = useSearchParams();
     const [bookings, setBookings] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const { isLiff } = useLiff();
+
+    // Check visibility params strictly
+    const isFrame = searchParams.get("view") === "frame";
+    const shouldHideNavbar = isLiff || isFrame;
 
     useEffect(() => {
         if (status === "unauthenticated") {
@@ -82,24 +89,18 @@ function MyBookingsContent() {
         }
     };
 
-    if (status === "loading" || loading) {
-        return (
-            <main className="min-h-screen bg-brand-light-gray">
-                <Navbar />
-                <div className="flex h-[60vh] items-center justify-center">
-                    <Loader2 className="w-12 h-12 animate-spin text-brand-orange" />
-                </div>
-            </main>
-        );
+    // Initial Loading State or Unauthenticated (while redirecting)
+    if (status === "loading" || status === "unauthenticated" || (status === "authenticated" && loading)) {
+        return <LoadingSplash message="預約紀錄讀取中..." />;
     }
 
     if (!session) return null; // Wait for redirect
 
     return (
         <main className="min-h-screen bg-brand-light-gray pb-20">
-            <Navbar />
+            {!shouldHideNavbar && <Navbar />}
 
-            <div className="max-w-xl mx-auto px-6 py-28 md:py-32">
+            <div className={`max-w-xl mx-auto px-6 ${shouldHideNavbar ? 'py-6 md:py-10' : 'py-28 md:py-32'}`}>
                 <header className="mb-10 text-center">
                     <h1 className="text-3xl font-bold text-brand-gray mb-4">我的預約紀錄</h1>
                     <p className="text-gray-500 italic">僅顯示即將到來且可取消的預約</p>
@@ -234,11 +235,7 @@ function Wrench({ size, className }: { size: number, className: string }) {
 
 export default function MyBookingsPage() {
     return (
-        <Suspense fallback={
-            <main className="min-h-screen bg-brand-light-gray flex items-center justify-center">
-                <Loader2 className="w-12 h-12 animate-spin text-brand-orange" />
-            </main>
-        }>
+        <Suspense fallback={<LoadingSplash message="系統載入中..." />}>
             <MyBookingsContent />
         </Suspense>
     );
