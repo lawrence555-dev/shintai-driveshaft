@@ -29,7 +29,7 @@ export async function GET() {
 export async function PATCH(req: Request) {
     try {
         const body = await req.json();
-        const { businessName, phoneNumber, address, slotDuration, lineNotifyToken } = body;
+        const { businessName, phoneNumber, address, slotDuration, lineNotifyToken, lineOfficialAccountUrl } = body;
 
         const settings = await prisma.settings.upsert({
             where: { id: "default" },
@@ -39,6 +39,7 @@ export async function PATCH(req: Request) {
                 address,
                 slotDuration,
                 lineNotifyToken,
+                lineOfficialAccountUrl,
             },
             create: {
                 id: "default",
@@ -47,6 +48,7 @@ export async function PATCH(req: Request) {
                 address: address || "525 彰化縣竹塘鄉光明路 525 號竹田巷 17 之 8 號",
                 slotDuration: slotDuration || 120,
                 lineNotifyToken,
+                lineOfficialAccountUrl,
             },
         });
 

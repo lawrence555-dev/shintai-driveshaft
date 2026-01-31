@@ -9,10 +9,12 @@ import { zhTW } from "date-fns/locale";
 import { BOOKING_SLOTS, getAvailableDates, TimeSlot, getSlotDateTime, isSlotPassed, isDateDisabled } from "@/lib/booking-utils";
 import { validateLicensePlate, validatePhone } from "@/lib/validation";
 import { Select, SelectTrigger, SelectContent, SelectItem } from "@/components/ui/Select";
-import { Calendar, Clock, Car, ChevronRight, ChevronLeft, CheckCircle2, AlertCircle, Phone, Hash, Wrench, Info, X } from "lucide-react";
+import { Calendar, Clock, Car, ChevronRight, ChevronLeft, CheckCircle2, AlertCircle, Phone, Hash, Wrench, Info, X, MessageCircle } from "lucide-react";
 import { createAppointment, getServices, getBookedSlots, getGlobalDateExceptions } from "./actions";
+import { useSettings } from "@/hooks/useSettings";
 
 export default function BookingPage() {
+    const { settings } = useSettings();
     const searchParams = useSearchParams();
     const [step, setStep] = useState(1);
     const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -142,6 +144,18 @@ export default function BookingPage() {
                         車牌：{licensePlate}<br />
                         電話：{phoneNumber}
                     </p>
+
+                    {settings?.lineOfficialAccountUrl && (
+                        <a
+                            href={settings.lineOfficialAccountUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="block w-full bg-[#06C755] hover:bg-[#05b34c] text-white py-4 rounded-xl font-bold mb-4 flex items-center justify-center gap-2 shadow-lg shadow-green-100 transition-all active:scale-95"
+                        >
+                            <MessageCircle size={24} className="fill-white" />
+                            加入官方 LINE 帳號
+                        </a>
+                    )}
                     <button
                         onClick={() => window.location.href = "/"}
                         className="w-full bg-brand-gray text-white py-3 rounded-lg font-bold"

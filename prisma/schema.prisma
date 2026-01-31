@@ -126,9 +126,10 @@ model Settings {
   phoneNumber     String   @default("0979293225")
   address         String   @default("525 彰化縣竹塘鄉光明路 525 號竹田巷 17 之 8 號")
   slotDuration    Int      @default(120)
-  lineNotifyToken String?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  lineNotifyToken      String?
+  lineOfficialAccountUrl String?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
 }
 
 model BlockedSlot {

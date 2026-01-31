@@ -8,6 +8,7 @@ interface Settings {
     address: string;
     slotDuration: number;
     lineNotifyToken: string | null;
+    lineOfficialAccountUrl: string | null;
 }
 
 let cachedSettings: Settings | null = null;

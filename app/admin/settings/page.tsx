@@ -80,6 +80,7 @@ export default function SystemSettings() {
         { key: "phoneNumber", label: "聯絡電話", value: settings?.phoneNumber },
         { key: "address", label: "營業地址", value: settings?.address },
         { key: "slotDuration", label: "預約時段限制", value: `${settings?.slotDuration} 分鐘 / 單位`, type: "number" },
+        { key: "lineOfficialAccountUrl", label: "LINE 官方帳號連結", value: settings?.lineOfficialAccountUrl || "未設定", placeholder: "https://line.me/..." },
         { key: "lineNotifyToken", label: "LINE Notify Token", value: settings?.lineNotifyToken || "未設定", type: "password" },
     ];
 

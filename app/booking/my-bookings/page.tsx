@@ -5,12 +5,14 @@ import { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import { format } from "date-fns";
 import { zhTW } from "date-fns/locale";
-import { Calendar, Clock, Car, Hash, XCircle, Loader2, AlertCircle } from "lucide-react";
+import { Calendar, Clock, Car, Hash, XCircle, Loader2, AlertCircle, MessageCircle } from "lucide-react";
 import { getUserBookings, cancelAppointment } from "../actions";
 import { toast } from "react-hot-toast";
 import ConfirmModal from "@/components/ConfirmModal";
+import { useSettings } from "@/hooks/useSettings";
 
 export default function MyBookingsPage() {
+    const { settings } = useSettings();
     const [bookings, setBookings] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [cancellingId, setCancellingId] = useState<string | null>(null);
@@ -137,11 +139,35 @@ export default function MyBookingsPage() {
                     )}
                 </div>
 
-                <div className="mt-12 p-6 bg-amber-50 rounded-2xl border border-amber-100 flex items-start gap-4">
-                    <AlertCircle className="text-amber-500 shrink-0 mt-1" size={20} />
-                    <div className="text-xs text-amber-700 leading-relaxed font-bold">
-                        <p className="mb-1 uppercase tracking-widest text-[10px] opacity-60">溫馨提示</p>
-                        若您因為臨時行程變更無法前來，請務必於預約時間前取消，讓其他車隊好友能使用該時段。若有任何疑問，歡迎撥打 0979-293-225 直接聯絡老闆。
+                <div className="mt-12 space-y-6">
+                    {settings?.lineOfficialAccountUrl && (
+                        <a
+                            href={settings.lineOfficialAccountUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="block w-full bg-[#06C755] hover:bg-[#05b34c] text-white p-6 rounded-2xl flex items-center justify-between shadow-lg shadow-green-100 transition-all active:scale-95 group"
+                        >
+                            <div className="flex items-center gap-4">
+                                <div className="bg-white/20 p-3 rounded-full">
+                                    <MessageCircle size={24} className="fill-white" />
+                                </div>
+                                <div className="text-left">
+                                    <p className="font-black text-lg">加入官方 LINE 帳號</p>
+                                    <p className="text-xs font-bold opacity-80">接收預約提醒、專屬優惠不漏接！</p>
+                                </div>
+                            </div>
+                            <div className="bg-white text-[#06C755] px-4 py-2 rounded-xl text-sm font-black group-hover:bg-white/90">
+                                立即加入
+                            </div>
+                        </a>
+                    )}
+
+                    <div className="p-6 bg-amber-50 rounded-2xl border border-amber-100 flex items-start gap-4">
+                        <AlertCircle className="text-amber-500 shrink-0 mt-1" size={20} />
+                        <div className="text-xs text-amber-700 leading-relaxed font-bold">
+                            <p className="mb-1 uppercase tracking-widest text-[10px] opacity-60">溫馨提示</p>
+                            若您因為臨時行程變更無法前來，請務必於預約時間前取消，讓其他車隊好友能使用該時段。若有任何疑問，歡迎撥打 0979-293-225 直接聯絡老闆。
+                        </div>
                     </div>
                 </div>
             </div>
