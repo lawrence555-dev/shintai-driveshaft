@@ -1,6 +1,22 @@
+"use client";
+
+import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import liff from "@line/liff";
 import { signIn, useSession } from "next-auth/react";
 
-// ... context definition ...
+interface LiffContextType {
+    isLiff: boolean;
+    liffError: string | null;
+    profile: any | null;
+}
+
+const LiffContext = createContext<LiffContextType>({
+    isLiff: false,
+    liffError: null,
+    profile: null,
+});
+
+export const useLiff = () => useContext(LiffContext);
 
 export function LiffProvider({ children }: { children: ReactNode }) {
     const { data: session, status } = useSession();
@@ -13,7 +29,10 @@ export function LiffProvider({ children }: { children: ReactNode }) {
             try {
                 // IMPORTANT: Replace with your actual LIFF ID from LINE Developers Console
                 const liffId = process.env.NEXT_PUBLIC_LINE_LIFF_ID || "2009015961-l55v9gsk";
-                if (!liffId) return;
+                if (!liffId) {
+                    console.warn("LIFF ID not found in environment variables");
+                    return;
+                }
 
                 await liff.init({ liffId });
 
@@ -31,6 +50,9 @@ export function LiffProvider({ children }: { children: ReactNode }) {
                         console.log("Auto-logging in via LINE...");
                         await signIn("line");
                     }
+                } else {
+                    // For debugging in browser
+                    // setIsLiff(true); // Uncomment to test LIFF UI in browser
                 }
             } catch (error: any) {
                 console.error("LIFF init failed", error);
@@ -38,11 +60,13 @@ export function LiffProvider({ children }: { children: ReactNode }) {
             }
         };
 
-        // Only run when status is settled
+        // Only run when status is settled or if you want to run strictly once on mount (bracket empty)
+        // But since we depend on `status` for auto-login, we check it.
+        // If status is loading, wait.
         if (status !== "loading") {
             initLiff();
         }
-    }, [status]); // Re-run if status changes, but initLiff checks internally
+    }, [status]);
 
     return (
         <LiffContext.Provider value={{ isLiff, liffError, profile }}>
