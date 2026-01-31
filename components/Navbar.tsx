@@ -5,12 +5,12 @@ import { Settings, UserCircle, LogOut, ShieldCheck, CalendarClock } from "lucide
 import { useSession, signOut } from "next-auth/react";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 
 import { useSettings } from "@/hooks/useSettings";
 import { useLiff } from "@/components/providers/LiffProvider";
 
-export default function Navbar() {
+function NavbarContent() {
     const { settings } = useSettings();
     const { data: session } = useSession();
     const router = useRouter();
@@ -123,5 +123,13 @@ export default function Navbar() {
                 </div>
             </div>
         </nav>
+    );
+}
+
+export default function Navbar() {
+    return (
+        <Suspense fallback={null}>
+            <NavbarContent />
+        </Suspense>
     );
 }

@@ -1,23 +1,9 @@
-"use client";
+import { signIn, useSession } from "next-auth/react";
 
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
-import liff from "@line/liff";
-
-interface LiffContextType {
-    isLiff: boolean;
-    liffError: string | null;
-    profile: any | null;
-}
-
-const LiffContext = createContext<LiffContextType>({
-    isLiff: false,
-    liffError: null,
-    profile: null,
-});
-
-export const useLiff = () => useContext(LiffContext);
+// ... context definition ...
 
 export function LiffProvider({ children }: { children: ReactNode }) {
+    const { data: session, status } = useSession();
     const [isLiff, setIsLiff] = useState(false);
     const [liffError, setLiffError] = useState<string | null>(null);
     const [profile, setProfile] = useState<any | null>(null);
@@ -27,10 +13,7 @@ export function LiffProvider({ children }: { children: ReactNode }) {
             try {
                 // IMPORTANT: Replace with your actual LIFF ID from LINE Developers Console
                 const liffId = process.env.NEXT_PUBLIC_LINE_LIFF_ID || "2009015961-l55v9gsk";
-                if (!liffId) {
-                    console.warn("LIFF ID not found in environment variables");
-                    return;
-                }
+                if (!liffId) return;
 
                 await liff.init({ liffId });
 
@@ -39,9 +22,15 @@ export function LiffProvider({ children }: { children: ReactNode }) {
                     setIsLiff(true);
                     const profile = await liff.getProfile();
                     setProfile(profile);
-                } else {
-                    // For debugging in browser
-                    // setIsLiff(true); // Uncomment to test LIFF UI in browser
+
+                    // Auto-login logic:
+                    // Only trigger if specifically in LIFF app context (not just browser pretending)
+                    // and strictly unauthenticated.
+                    if (status === "unauthenticated") {
+                        // Use redirect: true by default, but verify layout/loading states handle it.
+                        console.log("Auto-logging in via LINE...");
+                        await signIn("line");
+                    }
                 }
             } catch (error: any) {
                 console.error("LIFF init failed", error);
@@ -49,8 +38,11 @@ export function LiffProvider({ children }: { children: ReactNode }) {
             }
         };
 
-        initLiff();
-    }, []);
+        // Only run when status is settled
+        if (status !== "loading") {
+            initLiff();
+        }
+    }, [status]); // Re-run if status changes, but initLiff checks internally
 
     return (
         <LiffContext.Provider value={{ isLiff, liffError, profile }}>
