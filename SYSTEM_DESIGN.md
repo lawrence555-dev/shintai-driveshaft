@@ -33,7 +33,7 @@ graph TD
     User((客戶/管理者)) --> |HTTPS| Frontend[Next.js App Router]
     Frontend --> |Server Actions/API| Backend[Node.js Serverless Function]
     Backend --> |ORM: Prisma| DB[(PostgreSQL Database)]
-    Backend --> |OAuth| Auth[Google NextAuth]
+    Backend --> |OAuth| Auth[Google/LINE NextAuth]
 ```
 
 ### 2.2 資料庫設計 (Database Design)
@@ -60,6 +60,12 @@ graph TD
 
 #### 2.3.5 狀態管理優化 (Status Tracking)
 導入正式的 `CANCELLED` 狀態。當管理者取消預約時，系統會釋放資料庫時段索引，確保預約看板的「總計」與「已完成」統計數據精確。
+
+#### 2.3.6 LINE 整合工程 (LINE Integration)
+- **LiffProvider**: 使用 Context API 封裝 LIFF SDK 初始化邏輯。
+- **Auto-Login**: 偵測到 LIFF 環境且未登入時，自動觸發 `signIn("line")`，實現無縫登入。
+- **Suspense Boundary**: 針對 Navbar 與 Footer 中的 `useSearchParams` 實作懸疑邊界，防止在部分瀏覽器環境下因參數讀取導致的 Hydration Error。
+- **UI Adaptation**: 透過檢查 `?view=frame` 參數，動態卸載 (Unmount) 網頁原有的導航列與頁尾。
 
 ## 3. 系統規格 (Technical Specifications)
 

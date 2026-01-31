@@ -21,7 +21,10 @@
 - **動態展示**：自動同步後台設定的商家資訊（名稱、電話、地址）。
 - **服務說明**：專業的傳動軸維修與平衡服務介紹。
 - **線上預約**：整合 Google 登入，提供 **月曆格式 (Month View)** 的時段選擇器，支援月份切換並自動顯示國定假日與補班狀態。
-- **保固查詢**：客戶可透過電話與車牌快速查詢維修保固狀態。
+- **LINE 整合**：支援 LINE LIFF 內開模式，自動隱藏網頁導航列，並提供 **無感自動登入** 體驗。
+- **保固查詢**：
+    - **訪客**：透過電話與車牌快速查詢。
+    - **會員**：登入後於「我的保固」頁面自動帶出所有有效保固卡。
 
 ### 管理後台 (Admin Panel)
 - **預約看板**：即時掌握每日預約狀況，支援完整狀態生命週期：待確認、已確認、已完成、**已取消**。
@@ -35,9 +38,10 @@
 
 - **框架**: Next.js 15 (App Router / Turbopack)
 - **資料庫**: PostgreSQL (透過 Prisma ORM)
-- **身分驗證**: Auth.js (NextAuth v5) + Google Provider
+- **身分驗證**: Auth.js (NextAuth v5) + Google Provider + LINE Provider
 - **UI 框架**: Tailwind CSS + Shadcn/UI (部分自定義)
 - **圖示庫**: Lucide React
+- **LINE 整合**: LIFF SDK (@line/liff)
 - **日期處理**: date-fns
 
 ## 快速開始
@@ -79,7 +83,10 @@ GOOGLE_CLIENT_SECRET="your_google_secret"
 ## 專案文件
 - [系統規格書 (SYSTEM_SPEC.md)](./SYSTEM_SPEC.md)
 - [系統分析與設計文件 (SYSTEM_DESIGN.md)](./SYSTEM_DESIGN.md)
+- [資料庫架構文件 (database_schema.md)](./database_schema.md)
 - [使用者操作手冊 (USER_MANUAL.md)](./USER_MANUAL.md)
+- [系統安全與漏洞檢核報告 (SECURITY_AUDIT.md)](./SECURITY_AUDIT.md)
+- [系統測試報告 (TEST_REPORT.md)](./TEST_REPORT.md)
 
 ---
 © 2026 新泰汽車傳動軸. 專業、誠信、精密平衡.
