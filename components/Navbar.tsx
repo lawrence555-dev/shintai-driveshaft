@@ -6,7 +6,6 @@ import { useSession, signOut } from "next-auth/react";
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useEffect } from "react";
-import WarrantyLookupDialog from "./WarrantyLookupDialog";
 
 import { useSettings } from "@/hooks/useSettings";
 import { useLiff } from "@/components/providers/LiffProvider";
@@ -16,7 +15,6 @@ export default function Navbar() {
     const { data: session } = useSession();
     const router = useRouter();
     const searchParams = useSearchParams();
-    const [isWarrantyDialogOpen, setIsWarrantyDialogOpen] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
 
     useEffect(() => {
@@ -67,14 +65,14 @@ export default function Navbar() {
                     </>
                 )}
 
-                <button
-                    onClick={() => setIsWarrantyDialogOpen(true)}
+                <Link
+                    href="/warranty"
                     className="flex items-center justify-center border border-brand-orange/50 text-brand-orange hover:bg-brand-orange hover:text-white w-9 h-9 sm:w-auto sm:px-5 sm:py-2.5 rounded-xl font-bold text-sm transition-all active:scale-95 shadow-[0_0_20px_rgba(255,107,0,0.1)] shrink-0"
                     title="保固查詢"
                 >
                     <ShieldCheck className="sm:hidden" size={20} />
                     <span className="hidden sm:inline">保固查詢</span>
-                </button>
+                </Link>
 
                 <button
                     onClick={handleBooking}
@@ -124,10 +122,6 @@ export default function Navbar() {
                     )}
                 </div>
             </div>
-            <WarrantyLookupDialog
-                isOpen={isWarrantyDialogOpen}
-                onClose={() => setIsWarrantyDialogOpen(false)}
-            />
         </nav>
     );
 }
