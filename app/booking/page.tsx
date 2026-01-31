@@ -264,65 +264,71 @@ function BookingContent() {
                                             ))}
 
                                             {(() => {
-                                                const start = startOfWeek(startOfMonth(currentMonth));
-                                                const end = endOfWeek(endOfMonth(currentMonth));
-                                                const days = eachDayOfInterval({ start, end });
+                                                try {
+                                                    const start = startOfWeek(startOfMonth(currentMonth));
+                                                    const end = endOfWeek(endOfMonth(currentMonth));
+                                                    const days = eachDayOfInterval({ start, end });
 
-                                                return days.map((date) => {
-                                                    const isCurrentMonth = isSameMonth(date, currentMonth);
-                                                    const disabled = !isCurrentMonth || isDateDisabled(date, globalExceptions) || (startOfDay(date) < startOfDay(new Date()));
-                                                    const isToday = isTodayFns(date);
-                                                    const isSelected = selectedDate && isSameDay(selectedDate, date);
+                                                    return days.map((date) => {
+                                                        const isCurrentMonth = isSameMonth(date, currentMonth);
+                                                        const disabled = !isCurrentMonth || isDateDisabled(date, globalExceptions) || (startOfDay(date) < startOfDay(new Date()));
+                                                        const isToday = isTodayFns(date);
+                                                        const isSelected = selectedDate && isSameDay(selectedDate, date);
 
-                                                    const exception = globalExceptions.find(e =>
-                                                        isSameDay(new Date(e.date), date)
-                                                    );
+                                                        const exception = globalExceptions.find(e =>
+                                                            isSameDay(new Date(e.date), date)
+                                                        );
 
-                                                    return (
-                                                        <button
-                                                            key={date.toISOString()}
-                                                            disabled={disabled}
-                                                            onClick={() => {
-                                                                setSelectedDate(date);
-                                                                setSelectedSlot(null);
-                                                                setIsSlotModalOpen(true);
-                                                            }}
-                                                            className={`
-                                                                relative aspect-square sm:aspect-auto sm:h-24 p-2 rounded-2xl border-2 transition-all flex flex-col items-center justify-center
-                                                                ${!isCurrentMonth ? "opacity-0 pointer-events-none" : ""}
-                                                                ${disabled
-                                                                    ? "bg-gray-50/50 border-transparent text-gray-300 cursor-not-allowed"
-                                                                    : isSelected
-                                                                        ? "bg-brand-orange border-brand-orange text-white shadow-lg shadow-orange-100 scale-105 z-10"
-                                                                        : "bg-white border-white hover:border-brand-orange/30 text-brand-gray shadow-sm"
-                                                                }
-                                                                ${isToday && !isSelected ? "ring-2 ring-brand-orange ring-offset-2" : ""}
-                                                            `}
-                                                        >
-                                                            <span className="text-lg sm:text-2xl font-black tracking-tighter">
-                                                                {format(date, "d")}
-                                                            </span>
-
-                                                            {exception && (
-                                                                <span className={`
-                                                                    text-[9px] font-black px-1.5 py-0.5 rounded-full mt-1
-                                                                    ${exception.isHoliday
-                                                                        ? isSelected ? "bg-white/20 text-white" : "bg-red-50 text-red-600 border border-red-100"
-                                                                        : isSelected ? "bg-white/20 text-white" : "bg-blue-50 text-blue-600 border border-blue-100"
+                                                        return (
+                                                            <button
+                                                                key={date.toISOString()}
+                                                                type="button" // Explicitly type as button to prevent form submission issues
+                                                                disabled={disabled}
+                                                                onClick={() => {
+                                                                    setSelectedDate(date);
+                                                                    setSelectedSlot(null);
+                                                                    setIsSlotModalOpen(true);
+                                                                }}
+                                                                className={`
+                                                                    relative aspect-square sm:aspect-auto sm:h-24 p-2 rounded-2xl border-2 transition-all flex flex-col items-center justify-center
+                                                                    ${!isCurrentMonth ? "opacity-0 pointer-events-none" : ""}
+                                                                    ${disabled
+                                                                        ? "bg-gray-50/50 border-transparent text-gray-300 cursor-not-allowed"
+                                                                        : isSelected
+                                                                            ? "bg-brand-orange border-brand-orange text-white shadow-lg shadow-orange-100 scale-105 z-10"
+                                                                            : "bg-white border-white hover:border-brand-orange/30 text-brand-gray shadow-sm"
                                                                     }
-                                                                `}>
-                                                                    {exception.isHoliday ? "休" : "補"}
+                                                                    ${isToday && !isSelected ? "ring-2 ring-brand-orange ring-offset-2" : ""}
+                                                                `}
+                                                            >
+                                                                <span className="text-lg sm:text-2xl font-black tracking-tighter">
+                                                                    {format(date, "d")}
                                                                 </span>
-                                                            )}
 
-                                                            {isSelected && !disabled && (
-                                                                <div className="absolute top-1 right-1">
-                                                                    <CheckCircle2 size={12} className="text-white" />
-                                                                </div>
-                                                            )}
-                                                        </button>
-                                                    );
-                                                });
+                                                                {exception && (
+                                                                    <span className={`
+                                                                        text-[9px] font-black px-1.5 py-0.5 rounded-full mt-1
+                                                                        ${exception.isHoliday
+                                                                            ? isSelected ? "bg-white/20 text-white" : "bg-red-50 text-red-600 border border-red-100"
+                                                                            : isSelected ? "bg-white/20 text-white" : "bg-blue-50 text-blue-600 border border-blue-100"
+                                                                        }
+                                                                    `}>
+                                                                        {exception.isHoliday ? "休" : "補"}
+                                                                    </span>
+                                                                )}
+
+                                                                {isSelected && !disabled && (
+                                                                    <div className="absolute top-1 right-1">
+                                                                        <CheckCircle2 size={12} className="text-white" />
+                                                                    </div>
+                                                                )}
+                                                            </button>
+                                                        );
+                                                    });
+                                                } catch (e) {
+                                                    console.error("Calendar generation error:", e);
+                                                    return <div className="col-span-7 p-4 text-center text-red-400">無法載入月曆</div>;
+                                                }
                                             })()}
                                         </div>
 
