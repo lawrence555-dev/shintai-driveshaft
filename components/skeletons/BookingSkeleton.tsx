@@ -2,7 +2,7 @@ import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 
 export default function BookingSkeleton() {
     return (
-        <main className="min-h-screen bg-brand-light-gray">
+        <main className="fixed inset-0 z-50 bg-brand-light-gray overflow-y-auto">
             <div className="max-w-4xl mx-auto px-6 py-28 md:py-32">
                 <div className="mb-12 text-center">
                     <div className="h-8 w-48 bg-gray-200 rounded-lg mx-auto mb-4 animate-pulse"></div>
