@@ -8,7 +8,8 @@
 const LICENSE_PLATE_REGEX = /^([A-HJ-NP-Z]{3}[0-35-9]{4}|[A-HJ-NP-Z]{2}[0-9]{4}|[0-9]{4}[A-HJ-NP-Z]{2})$/;
 
 // 台灣手機號碼：09 開頭，共 10 碼
-const PHONE_REGEX = /^09[0-9]{8}$/;
+// 台灣市話號碼：0 開頭，2~8 碼區域碼 + 6~8 碼電話號碼，共 9~10 碼
+const PHONE_REGEX = /^(09[0-9]{8}|0[2-8][0-9]{7,8})$/;
 
 /**
  * 正規化車牌號碼
@@ -69,12 +70,12 @@ export function validatePhone(phone: string): string | null {
         return "請填寫聯絡電話";
     }
 
-    if (normalized.length < 10) {
-        return "請輸入正確的聯絡電話（需 10 碼）";
+    if (normalized.length < 9 || normalized.length > 10) {
+        return "請輸入正確的聯絡電話（手機 10 碼或市話 9-10 碼）";
     }
 
     if (!PHONE_REGEX.test(normalized)) {
-        return "請輸入正確的聯絡電話";
+        return "請輸入正確的手機或市話號碼";
     }
 
     return null;
