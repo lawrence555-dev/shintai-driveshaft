@@ -83,6 +83,8 @@ export default function AdminDashboard() {
         return () => window.removeEventListener("resize", handleResize);
     }, [fetchAppointments]);
 
+    const [viewRange, setViewRange] = useState<{ start: Date; end: Date } | null>(null);
+
     // Derived filtered data
     const filteredAppointments = useMemo(() => {
         return appointments.filter(app => {
@@ -92,9 +94,18 @@ export default function AdminDashboard() {
                 ? (data.licensePlate?.toLowerCase().includes(searchQuery.toLowerCase()) ||
                     data.phoneNumber?.includes(searchQuery))
                 : true;
-            return matchesStatus && matchesSearch;
+
+            // Sync with Calendar View Range
+            // If viewRange is set, only show appointments inside that range
+            let matchesDate = true;
+            if (viewRange) {
+                const appDate = new Date(app.start);
+                matchesDate = appDate >= viewRange.start && appDate < viewRange.end;
+            }
+
+            return matchesStatus && matchesSearch && matchesDate;
         }).sort((a, b) => new Date(b.start).getTime() - new Date(a.start).getTime());
-    }, [appointments, statusFilter, searchQuery]);
+    }, [appointments, statusFilter, searchQuery, viewRange]);
 
     const handleEventClick = (info: any) => {
         setSelectedAppointment(info.event.extendedProps);
@@ -266,6 +277,7 @@ export default function AdminDashboard() {
                                         datesSet={(arg) => {
                                             setCalendarTitle(arg.view.title);
                                             setCurrentView(arg.view.type);
+                                            setViewRange({ start: arg.start, end: arg.end });
                                         }}
                                         height="auto"
                                         events={appointments}
