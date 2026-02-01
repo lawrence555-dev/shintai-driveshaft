@@ -5,7 +5,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { zhTW } from "date-fns/locale";
-import { Search, Users, Phone, Car, Edit2, X, Save, History, ChevronRight } from "lucide-react";
+import { Search, Users, Phone, Car, Edit2, X, Save, History, ChevronRight, ChevronLeft, Calendar, ShieldCheck } from "lucide-react";
 
 interface Vehicle {
     id: string;
@@ -44,21 +44,36 @@ export default function CustomersPage() {
     const [isEditing, setIsEditing] = useState(false);
     const [editForm, setEditForm] = useState<{ name: string; notes: string }>({ name: "", notes: "" });
     const [appointments, setAppointments] = useState<Appointment[]>([]);
-    const [showHistory, setShowHistory] = useState(false);
+
+    // UI State
+    const [activeTab, setActiveTab] = useState<'info' | 'history'>('info');
+
+    // Pagination State
+    const [page, setPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const [totalCustomers, setTotalCustomers] = useState(0);
 
     const fetchCustomers = useCallback(async () => {
+        setLoading(true);
         try {
-            const res = await fetch(`/api/customers?search=${encodeURIComponent(searchQuery)}`);
+            const res = await fetch(`/api/customers?search=${encodeURIComponent(searchQuery)}&page=${page}&limit=20`);
             if (res.ok) {
                 const data = await res.json();
-                setCustomers(data);
+                if (data.data) {
+                    setCustomers(data.data);
+                    setTotalPages(data.totalPages);
+                    setTotalCustomers(data.total);
+                } else {
+                    // Fallback for backward capability
+                    setCustomers(Array.isArray(data) ? data : []);
+                }
             }
         } catch (error) {
             console.error("Failed to fetch customers:", error);
         } finally {
             setLoading(false);
         }
-    }, [searchQuery]);
+    }, [searchQuery, page]);
 
     useEffect(() => {
         if (status === "unauthenticated") {
@@ -67,11 +82,20 @@ export default function CustomersPage() {
     }, [status, router]);
 
     useEffect(() => {
+        // Debounce search, reset page to 1
         const timer = setTimeout(() => {
-            fetchCustomers();
+            if (page !== 1) {
+                setPage(1);
+            } else {
+                fetchCustomers();
+            }
         }, 300);
         return () => clearTimeout(timer);
-    }, [searchQuery, fetchCustomers]);
+    }, [searchQuery]);
+
+    useEffect(() => {
+        fetchCustomers();
+    }, [page]);
 
     const fetchAppointments = async (customerId: string) => {
         try {
@@ -85,12 +109,14 @@ export default function CustomersPage() {
         }
     };
 
+    // ... (rest of the file)
+
     const handleSelectCustomer = async (customer: Customer) => {
         setSelectedCustomer(customer);
         setEditForm({ name: customer.name || "", notes: customer.notes || "" });
         setIsEditing(false);
+        setActiveTab('info');
         await fetchAppointments(customer.id);
-        setShowHistory(false);
     };
 
     const handleSave = async () => {
@@ -127,7 +153,7 @@ export default function CustomersPage() {
                     <p className="text-gray-500 text-sm mt-1">管理客戶資料與維修歷史</p>
                 </div>
                 <div className="text-sm text-gray-500">
-                    共 {customers.length} 位客戶
+                    共 {totalCustomers} 位客戶
                 </div>
             </div>
 
@@ -182,154 +208,216 @@ export default function CustomersPage() {
                             ))
                         )}
                     </div>
+
+                    {/* Pagination Controls */}
+                    <div className="p-4 border-t shrink-0 flex items-center justify-between bg-gray-50">
+                        <button
+                            onClick={() => setPage(p => Math.max(1, p - 1))}
+                            disabled={page === 1}
+                            className="p-2 rounded-lg hover:bg-gray-200 disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
+                        >
+                            <ChevronLeft size={20} />
+                        </button>
+                        <span className="text-sm font-bold text-gray-500">
+                            Page {page} / {totalPages || 1}
+                        </span>
+                        <button
+                            onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                            disabled={page >= totalPages}
+                            className="p-2 rounded-lg hover:bg-gray-200 disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
+                        >
+                            <ChevronRight size={20} />
+                        </button>
+                    </div>
                 </div>
 
                 {/* Customer Detail */}
-                <div className="lg:col-span-2 bg-white rounded-2xl shadow-lg p-6">
+                <div className="lg:col-span-2 bg-white rounded-2xl shadow-lg flex flex-col h-[700px]">
                     {selectedCustomer ? (
                         <>
-                            <div className="flex items-center justify-between mb-6">
-                                <h2 className="text-lg font-bold">客戶詳情</h2>
-                                <div className="flex gap-2">
-                                    <button
-                                        onClick={() => setShowHistory(!showHistory)}
-                                        className={`px-4 py-2 rounded-lg flex items-center gap-2 transition-all ${showHistory ? 'bg-brand-orange text-white' : 'border border-gray-200 hover:bg-gray-50'}`}
-                                    >
-                                        <History size={16} />
-                                        維修歷史
-                                    </button>
-                                    {isEditing ? (
-                                        <>
-                                            <button
-                                                onClick={() => setIsEditing(false)}
-                                                className="px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50"
-                                            >
-                                                <X size={16} />
-                                            </button>
-                                            <button
-                                                onClick={handleSave}
-                                                className="px-4 py-2 bg-brand-orange text-white rounded-lg flex items-center gap-2"
-                                            >
-                                                <Save size={16} />
-                                                儲存
-                                            </button>
-                                        </>
-                                    ) : (
-                                        <button
-                                            onClick={() => setIsEditing(true)}
-                                            className="px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 flex items-center gap-2"
-                                        >
-                                            <Edit2 size={16} />
-                                            編輯
-                                        </button>
+                            {/* Tabs Header */}
+                            <div className="flex items-center border-b px-6 pt-6 gap-6">
+                                <button
+                                    onClick={() => setActiveTab('info')}
+                                    className={`pb-4 px-2 text-lg font-bold transition-all relative ${activeTab === 'info'
+                                            ? 'text-brand-orange'
+                                            : 'text-gray-400 hover:text-brand-gray'
+                                        }`}
+                                >
+                                    基本資料
+                                    {activeTab === 'info' && (
+                                        <div className="absolute bottom-0 left-0 w-full h-1 bg-brand-orange rounded-t-full"></div>
                                     )}
-                                </div>
+                                </button>
+                                <button
+                                    onClick={() => setActiveTab('history')}
+                                    className={`pb-4 px-2 text-lg font-bold transition-all relative ${activeTab === 'history'
+                                            ? 'text-brand-orange'
+                                            : 'text-gray-400 hover:text-brand-gray'
+                                        }`}
+                                >
+                                    維修歷史
+                                    <span className="ml-2 text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">
+                                        {appointments.length}
+                                    </span>
+                                    {activeTab === 'history' && (
+                                        <div className="absolute bottom-0 left-0 w-full h-1 bg-brand-orange rounded-t-full"></div>
+                                    )}
+                                </button>
                             </div>
 
-                            {showHistory ? (
-                                <div className="space-y-4">
-                                    <h3 className="font-bold text-gray-600">維修紀錄 ({appointments.length})</h3>
-                                    {appointments.length === 0 ? (
-                                        <div className="text-center py-8 text-gray-400">尚無維修紀錄</div>
-                                    ) : (
-                                        appointments.map((apt) => (
-                                            <div key={apt.id} className="p-4 border rounded-xl">
-                                                <div className="flex justify-between items-start">
-                                                    <div>
-                                                        <div className="font-bold">{apt.service.name}</div>
-                                                        <div className="text-sm text-gray-500">
-                                                            {format(new Date(apt.date), "yyyy/MM/dd (eee)", { locale: zhTW })}
+                            {/* Content Area */}
+                            <div className="flex-1 overflow-y-auto p-6">
+                                {activeTab === 'history' ? (
+                                    <div className="space-y-4">
+                                        {appointments.length === 0 ? (
+                                            <div className="text-center py-20 text-gray-400">
+                                                <History size={48} className="mx-auto mb-4 opacity-20" />
+                                                <p>尚無維修紀錄</p>
+                                            </div>
+                                        ) : (
+                                            appointments.map((apt) => (
+                                                <div key={apt.id} className="p-5 border border-gray-100 rounded-2xl hover:border-brand-orange/30 transition-all bg-gray-50/30">
+                                                    <div className="flex justify-between items-start">
+                                                        <div>
+                                                            <div className="font-bold text-lg text-brand-gray mb-1">{apt.service.name}</div>
+                                                            <div className="text-sm text-gray-500 flex items-center gap-2">
+                                                                <Calendar size={14} />
+                                                                {format(new Date(apt.date), "yyyy/MM/dd (eee)", { locale: zhTW })}
+                                                            </div>
+                                                            {apt.licensePlate && (
+                                                                <div className="text-xs text-brand-orange font-mono mt-2 flex items-center gap-1 bg-orange-50 px-2 py-1 rounded-md w-fit">
+                                                                    <Car size={10} />
+                                                                    {apt.licensePlate} {apt.carModel && ` / ${apt.carModel}`}
+                                                                </div>
+                                                            )}
                                                         </div>
-                                                        {apt.licensePlate && (
-                                                            <div className="text-xs text-brand-orange font-mono mt-1 flex items-center gap-1">
-                                                                <Car size={10} />
-                                                                {apt.licensePlate} {apt.carModel && `(${apt.carModel})`}
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                    <div className="text-right">
-                                                        <span className={`px-2 py-1 rounded-full text-xs font-bold ${apt.status === 'COMPLETED' ? 'bg-green-100 text-green-600' : apt.status === 'CANCELLED' ? 'bg-red-100 text-red-600' : 'bg-yellow-100 text-yellow-600'}`}>
-                                                            {apt.status === 'COMPLETED' ? '已完成' : apt.status === 'CANCELLED' ? '已取消' : '待處理'}
-                                                        </span>
-                                                        {apt.warrantyUntil && (
-                                                            <div className="text-xs text-gray-400 mt-1">
-                                                                保固至 {format(new Date(apt.warrantyUntil), "yyyy/MM/dd")}
-                                                            </div>
-                                                        )}
+                                                        <div className="text-right">
+                                                            <span className={`px-3 py-1 rounded-full text-xs font-black tracking-wider ${apt.status === 'COMPLETED' ? 'bg-green-100 text-green-600' : apt.status === 'CANCELLED' ? 'bg-red-100 text-red-600' : 'bg-yellow-100 text-yellow-600'}`}>
+                                                                {apt.status === 'COMPLETED' ? '已完成' : apt.status === 'CANCELLED' ? '已取消' : '待處理'}
+                                                            </span>
+                                                            {apt.warrantyUntil && (
+                                                                <div className="text-xs text-gray-400 mt-2 flex items-center justify-end gap-1">
+                                                                    <ShieldCheck size={12} />
+                                                                    保固至 {format(new Date(apt.warrantyUntil), "yyyy/MM/dd")}
+                                                                </div>
+                                                            )}
+                                                        </div>
                                                     </div>
                                                 </div>
+                                            ))
+                                        )}
+                                    </div>
+                                ) : (
+                                    // Info Tab Content
+                                    <div className="space-y-8 max-w-2xl">
+                                        {/* Action Bar for Display Mode */}
+                                        {!isEditing && (
+                                            <div className="flex justify-end">
+                                                <button
+                                                    onClick={() => setIsEditing(true)}
+                                                    className="px-4 py-2 border border-brand-orange text-brand-orange rounded-xl hover:bg-orange-50 flex items-center gap-2 font-bold transition-all"
+                                                >
+                                                    <Edit2 size={16} />
+                                                    編輯資料
+                                                </button>
                                             </div>
-                                        ))
-                                    )}
-                                </div>
-                            ) : (
-                                <div className="space-y-6">
-                                    <div className="grid grid-cols-2 gap-4">
+                                        )}
+
+                                        <div className="grid grid-cols-2 gap-8">
+                                            <div>
+                                                <label className="block text-sm font-bold mb-3 text-gray-400 uppercase tracking-wider">客戶姓名</label>
+                                                {isEditing ? (
+                                                    <input
+                                                        type="text"
+                                                        value={editForm.name}
+                                                        onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                                                        className="w-full p-4 rounded-xl border bg-gray-50 focus:bg-white focus:border-brand-orange outline-none text-lg font-bold"
+                                                    />
+                                                ) : (
+                                                    <div className="text-2xl font-black text-brand-gray">{selectedCustomer.name || '未設定'}</div>
+                                                )}
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-bold mb-3 text-gray-400 uppercase tracking-wider">聯絡電話</label>
+                                                <div className="text-2xl font-black text-brand-gray font-mono">{selectedCustomer.phoneNumber}</div>
+                                            </div>
+                                        </div>
+
+                                        {/* Vehicles Section */}
                                         <div>
-                                            <label className="block text-sm font-bold mb-2 text-gray-600">姓名</label>
-                                            {isEditing ? (
-                                                <input
-                                                    type="text"
-                                                    value={editForm.name}
-                                                    onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-                                                    className="w-full p-3 rounded-lg border focus:border-brand-orange outline-none"
-                                                />
+                                            <label className="block text-sm font-bold mb-3 text-gray-400 uppercase tracking-wider">
+                                                名下車輛 ({selectedCustomer.vehicles.length})
+                                            </label>
+                                            {selectedCustomer.vehicles.length === 0 ? (
+                                                <div className="p-4 bg-gray-50 rounded-xl text-gray-400 italic">尚無車輛資料</div>
                                             ) : (
-                                                <div className="p-3 bg-gray-50 rounded-lg">{selectedCustomer.name || '未設定'}</div>
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                                    {selectedCustomer.vehicles.map((vehicle) => (
+                                                        <div key={vehicle.id} className="p-4 bg-gray-50 rounded-xl flex items-center gap-4 border border-transparent hover:border-gray-200 transition-all">
+                                                            <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-brand-orange shadow-sm">
+                                                                <Car size={20} />
+                                                            </div>
+                                                            <div>
+                                                                <div className="font-mono font-black text-lg text-brand-gray">{vehicle.licensePlate}</div>
+                                                                {vehicle.carModel && (
+                                                                    <div className="text-sm text-gray-500 font-bold">{vehicle.carModel}</div>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
                                             )}
                                         </div>
-                                        <div>
-                                            <label className="block text-sm font-bold mb-2 text-gray-600">電話</label>
-                                            <div className="p-3 bg-gray-50 rounded-lg font-mono">{selectedCustomer.phoneNumber}</div>
-                                        </div>
-                                    </div>
 
-                                    {/* Vehicles Section */}
-                                    <div>
-                                        <label className="block text-sm font-bold mb-2 text-gray-600">
-                                            車輛 ({selectedCustomer.vehicles.length})
-                                        </label>
-                                        {selectedCustomer.vehicles.length === 0 ? (
-                                            <div className="p-3 bg-gray-50 rounded-lg text-gray-400">尚無車輛資料</div>
-                                        ) : (
-                                            <div className="space-y-2">
-                                                {selectedCustomer.vehicles.map((vehicle) => (
-                                                    <div key={vehicle.id} className="p-3 bg-gray-50 rounded-lg flex items-center gap-3">
-                                                        <Car size={16} className="text-brand-orange" />
-                                                        <span className="font-mono font-bold">{vehicle.licensePlate}</span>
-                                                        {vehicle.carModel && (
-                                                            <span className="text-gray-500">{vehicle.carModel}</span>
-                                                        )}
-                                                    </div>
-                                                ))}
+                                        <div>
+                                            <label className="block text-sm font-bold mb-3 text-gray-400 uppercase tracking-wider">備註事項</label>
+                                            {isEditing ? (
+                                                <textarea
+                                                    value={editForm.notes}
+                                                    onChange={(e) => setEditForm({ ...editForm, notes: e.target.value })}
+                                                    rows={4}
+                                                    className="w-full p-4 rounded-xl border bg-gray-50 focus:bg-white focus:border-brand-orange outline-none font-medium resize-none"
+                                                    placeholder="輸入備註..."
+                                                />
+                                            ) : (
+                                                <div className="p-6 bg-gray-50 rounded-2xl min-h-[100px] text-gray-600 leading-relaxed whitespace-pre-line">
+                                                    {selectedCustomer.notes || '無備註內容'}
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {isEditing && (
+                                            <div className="flex items-center gap-4 pt-4 border-t">
+                                                <button
+                                                    onClick={() => setIsEditing(false)}
+                                                    className="px-6 py-3 rounded-xl font-bold text-gray-500 hover:bg-gray-100 transition-all"
+                                                >
+                                                    取消
+                                                </button>
+                                                <button
+                                                    onClick={handleSave}
+                                                    className="px-8 py-3 bg-brand-orange text-white rounded-xl font-bold shadow-lg shadow-orange-200 hover:shadow-orange-300 hover:scale-105 transition-all flex items-center gap-2"
+                                                >
+                                                    <Save size={18} />
+                                                    儲存變更
+                                                </button>
                                             </div>
                                         )}
-                                    </div>
 
-                                    <div>
-                                        <label className="block text-sm font-bold mb-2 text-gray-600">備註</label>
-                                        {isEditing ? (
-                                            <textarea
-                                                value={editForm.notes}
-                                                onChange={(e) => setEditForm({ ...editForm, notes: e.target.value })}
-                                                rows={3}
-                                                className="w-full p-3 rounded-lg border focus:border-brand-orange outline-none"
-                                            />
-                                        ) : (
-                                            <div className="p-3 bg-gray-50 rounded-lg min-h-[80px]">{selectedCustomer.notes || '無備註'}</div>
-                                        )}
+                                        <div className="text-xs text-gray-300 pt-8 text-center font-mono">
+                                            Client ID: {selectedCustomer.id} | Created: {format(new Date(selectedCustomer.createdAt), "yyyy/MM/dd HH:mm")}
+                                        </div>
                                     </div>
-                                    <div className="text-sm text-gray-400">
-                                        建立時間：{format(new Date(selectedCustomer.createdAt), "yyyy/MM/dd HH:mm")}
-                                    </div>
-                                </div>
-                            )}
+                                )}
+                            </div>
                         </>
                     ) : (
                         <div className="h-full flex items-center justify-center text-gray-400 min-h-[300px]">
                             <div className="text-center">
-                                <Users size={48} className="mx-auto mb-4 opacity-30" />
-                                <p>請從左側選擇客戶</p>
+                                <Users size={64} className="mx-auto mb-6 opacity-20" />
+                                <p className="text-xl font-bold">請從左側列表選擇客戶</p>
+                                <p className="text-sm mt-2 opacity-50">查看詳細資料與維修歷史</p>
                             </div>
                         </div>
                     )}
