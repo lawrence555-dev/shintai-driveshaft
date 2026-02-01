@@ -12,6 +12,7 @@ import { useSettings } from "@/hooks/useSettings";
 
 import { useLiff } from "@/components/providers/LiffProvider";
 import BookingSkeleton from "@/components/skeletons/BookingSkeleton";
+import FloatingLineButton from "@/components/FloatingLineButton";
 
 export default function Home() {
   const { settings } = useSettings();
@@ -32,6 +33,8 @@ export default function Home() {
       <Reviews />
       <Contact />
       <CTA />
+
+      <FloatingLineButton />
 
       <footer className="bg-brand-gray text-white py-8 border-t border-white/10 text-center text-sm px-6">
         <p>© 2024 {settings?.businessName || "新泰汽車傳動軸"}. All Rights Reserved. 專業、誠信、精密平衡.</p>
