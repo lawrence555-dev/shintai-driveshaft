@@ -43,8 +43,7 @@ export function LiffProvider({ children }: { children: ReactNode }) {
                 }
 
                 // Optimization: If NOT in LIFF browser, unblock UI immediately
-                // This prevents the "foggy" skeleton flash on desktop/standard mobile browsers
-                if (!navigator.userAgent.includes("LIFF")) {
+                if (typeof window !== 'undefined' && !navigator.userAgent.includes("LIFF")) {
                     setIsInitialized(true);
                 }
 
