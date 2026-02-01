@@ -23,7 +23,17 @@ export async function GET(request: Request) {
                 where,
                 include: {
                     vehicles: {
-                        orderBy: { createdAt: 'desc' }
+                        orderBy: { createdAt: 'desc' },
+                        include: {
+                            appointments: {
+                                orderBy: { date: 'desc' },
+                                include: {
+                                    service: {
+                                        select: { name: true }
+                                    }
+                                }
+                            }
+                        }
                     }
                 },
                 orderBy: { updatedAt: 'desc' },

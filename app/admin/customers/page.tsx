@@ -18,7 +18,7 @@ interface Customer {
     name: string | null;
     phoneNumber: string;
     notes: string | null;
-    vehicles: Vehicle[];
+    vehicles: (Vehicle & { appointments: Appointment[] })[];
     createdAt: string;
 }
 
@@ -43,7 +43,7 @@ export default function CustomersPage() {
     const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
     const [isEditing, setIsEditing] = useState(false);
     const [editForm, setEditForm] = useState<{ name: string; notes: string }>({ name: "", notes: "" });
-    const [appointments, setAppointments] = useState<Appointment[]>([]);
+    // const [appointments, setAppointments] = useState<Appointment[]>([]); // Removed: Use selectedCustomer.appointments directly
 
     // UI State
     const [activeTab, setActiveTab] = useState<'info' | 'history'>('info');
@@ -97,26 +97,14 @@ export default function CustomersPage() {
         fetchCustomers();
     }, [page]);
 
-    const fetchAppointments = async (customerId: string) => {
-        try {
-            const res = await fetch(`/api/customers/${customerId}/appointments`);
-            if (res.ok) {
-                const data = await res.json();
-                setAppointments(data);
-            }
-        } catch (error) {
-            console.error("Failed to fetch appointments:", error);
-        }
-    };
-
-    // ... (rest of the file)
+    // fetchAppointments removed - data is now eager loaded
 
     const handleSelectCustomer = async (customer: Customer) => {
         setSelectedCustomer(customer);
         setEditForm({ name: customer.name || "", notes: customer.notes || "" });
         setIsEditing(false);
         setActiveTab('info');
-        await fetchAppointments(customer.id);
+        // No need to fetch appointments anymore
     };
 
     const handleSave = async () => {
@@ -129,14 +117,29 @@ export default function CustomersPage() {
             });
             if (res.ok) {
                 const updated = await res.json();
-                setCustomers(prev => prev.map(c => c.id === updated.id ? updated : c));
-                setSelectedCustomer(updated);
+                // Merge existing vehicles/appointments since PATCH response likely shallow
+                const updatedWithRelation = {
+                    ...updated,
+                    vehicles: selectedCustomer.vehicles
+                };
+
+                setCustomers(prev => prev.map(c => c.id === updated.id ? updatedWithRelation : c));
+                setSelectedCustomer(updatedWithRelation);
                 setIsEditing(false);
             }
         } catch (error) {
             console.error("Failed to update customer:", error);
         }
     };
+
+    const getSortedAppointments = (customer: Customer): Appointment[] => {
+        if (!customer.vehicles) return [];
+        return customer.vehicles
+            .flatMap(v => v.appointments || [])
+            .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    };
+
+    const customerAppointments = selectedCustomer ? getSortedAppointments(selectedCustomer) : [];
 
     if (status === "loading" || !session) {
         return <div className="min-h-screen flex items-center justify-center">載入中...</div>;
@@ -240,8 +243,8 @@ export default function CustomersPage() {
                                 <button
                                     onClick={() => setActiveTab('info')}
                                     className={`pb-4 px-2 text-lg font-bold transition-all relative ${activeTab === 'info'
-                                            ? 'text-brand-orange'
-                                            : 'text-gray-400 hover:text-brand-gray'
+                                        ? 'text-brand-orange'
+                                        : 'text-gray-400 hover:text-brand-gray'
                                         }`}
                                 >
                                     基本資料
@@ -252,13 +255,13 @@ export default function CustomersPage() {
                                 <button
                                     onClick={() => setActiveTab('history')}
                                     className={`pb-4 px-2 text-lg font-bold transition-all relative ${activeTab === 'history'
-                                            ? 'text-brand-orange'
-                                            : 'text-gray-400 hover:text-brand-gray'
+                                        ? 'text-brand-orange'
+                                        : 'text-gray-400 hover:text-brand-gray'
                                         }`}
                                 >
                                     維修歷史
                                     <span className="ml-2 text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">
-                                        {appointments.length}
+                                        {customerAppointments.length}
                                     </span>
                                     {activeTab === 'history' && (
                                         <div className="absolute bottom-0 left-0 w-full h-1 bg-brand-orange rounded-t-full"></div>
@@ -270,13 +273,13 @@ export default function CustomersPage() {
                             <div className="flex-1 overflow-y-auto p-6">
                                 {activeTab === 'history' ? (
                                     <div className="space-y-4">
-                                        {appointments.length === 0 ? (
+                                        {customerAppointments.length === 0 ? (
                                             <div className="text-center py-20 text-gray-400">
                                                 <History size={48} className="mx-auto mb-4 opacity-20" />
                                                 <p>尚無維修紀錄</p>
                                             </div>
                                         ) : (
-                                            appointments.map((apt) => (
+                                            customerAppointments.map((apt) => (
                                                 <div key={apt.id} className="p-5 border border-gray-100 rounded-2xl hover:border-brand-orange/30 transition-all bg-gray-50/30">
                                                     <div className="flex justify-between items-start">
                                                         <div>

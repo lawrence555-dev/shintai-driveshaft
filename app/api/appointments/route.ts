@@ -10,6 +10,7 @@ export async function GET(request: Request) {
     const hasWarranty = searchParams.get("hasWarranty") === "true";
     const from = searchParams.get("from");
     const to = searchParams.get("to");
+    const search = searchParams.get("search");
 
     try {
         const session = await auth();
@@ -26,6 +27,13 @@ export async function GET(request: Request) {
                 gte: new Date(from),
                 lte: new Date(to),
             };
+        }
+
+        if (search) {
+            where.OR = [
+                { licensePlate: { contains: search, mode: "insensitive" } },
+                { carModel: { contains: search, mode: "insensitive" } }
+            ];
         }
 
         // If pagination params are present, return paginated response

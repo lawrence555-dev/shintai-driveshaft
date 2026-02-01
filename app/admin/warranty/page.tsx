@@ -41,29 +41,12 @@ export default function WarrantyDashboard() {
     const fetchWarranties = useCallback(async () => {
         setLoading(true);
         try {
-            // Use server-side filtering and pagination
-            // Note: Search query currently filters client-side in the original code. 
-            // For true pagination, we might need search backend support for appointments too.
-            // But for now, let's keep search client-side if we fetch limited data? 
-            // NO, if we paginate, we MUST search server-side or fetch all.
-            // My API update didn't explicitly implement 'search' on appointments yet (only filtering by status/date).
-            // Users usually search by licensePlate or carModel.
-            // Let's add search param support to app/api/appointments/route.ts FIRST? 
-            // Actually, I should probably do that to make pagination useful.
-            // But wait, the user instructions didn't explicitly demand search on backend for appointments, 
-            // but commonly implied.
-            // Let's implement pagination first. If I only fetch 20, client-side search only searches those 20.
-            // That's bad.
-            // I'll proceed with basic pagination for now, and note that search might need API update.
-            // Actually, let's just fetch all like before if search is active? 
-            // No, that defeats the purpose of pagination.
-            // For this task, I will stick to pagination.
-
             const query = new URLSearchParams({
                 status: "COMPLETED",
                 hasWarranty: "true",
                 page: page.toString(),
-                limit: "20"
+                limit: "20",
+                search: searchQuery
             });
 
             const res = await fetch(`/api/appointments?${query.toString()}`);
@@ -81,20 +64,24 @@ export default function WarrantyDashboard() {
         } finally {
             setLoading(false);
         }
-    }, [page]);
+    }, [page, searchQuery]);
 
     useEffect(() => {
-        fetchWarranties();
-    }, [fetchWarranties]);
+        const timer = setTimeout(() => {
+            if (page !== 1 && searchQuery) {
+                setPage(1);
+            } else {
+                fetchWarranties();
+            }
+        }, 300);
+        return () => clearTimeout(timer);
+    }, [searchQuery]);
 
-    // Client-side search for the *current page* - this is a limitation without backend search.
-    // Ideally update API to support q/search.
-    const filteredWarranties = useMemo(() => {
-        return appointments.filter(app =>
-            app.licensePlate?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            app.carModel.toLowerCase().includes(searchQuery.toLowerCase())
-        ).sort((a, b) => new Date(b.warrantyUntil!).getTime() - new Date(a.warrantyUntil!).getTime());
-    }, [appointments, searchQuery]);
+    useEffect(() => {
+        if (!searchQuery) {
+            fetchWarranties();
+        }
+    }, [page]);
 
     const getRemainingDays = (until: string) => {
         const diff = differenceInDays(new Date(until), new Date());
@@ -148,7 +135,7 @@ export default function WarrantyDashboard() {
                         <tbody className="divide-y divide-gray-100">
                             {loading ? (
                                 <tr><td colSpan={4} className="px-10 py-20 text-center">載入中...</td></tr>
-                            ) : filteredWarranties.length === 0 ? (
+                            ) : appointments.length === 0 ? (
                                 <tr>
                                     <td colSpan={4} className="px-10 py-20 text-center text-gray-400">
                                         <Filter size={48} className="mx-auto mb-4 opacity-20" />
@@ -156,7 +143,7 @@ export default function WarrantyDashboard() {
                                     </td>
                                 </tr>
                             ) : (
-                                filteredWarranties.map((app) => {
+                                appointments.map((app) => {
                                     const remainingDays = getRemainingDays(app.warrantyUntil!);
                                     const isExpired = remainingDays < 0;
 
