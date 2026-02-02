@@ -485,14 +485,14 @@ function BookingContent() {
                                                     setPhoneError(err);
                                                 }
                                             }}
-                                            placeholder="例如：0912345678"
+                                            placeholder="例如：0912345678 或 041234567"
                                             className={`w-full p-4 rounded-xl border-2 ${phoneError ? 'border-red-400 bg-red-50' : 'border-gray-100 focus:border-brand-orange'} outline-none transition-all bg-white font-mono`}
                                         />
                                         {phoneError ? (
                                             <p className="mt-1 text-xs text-red-500 font-bold">{phoneError}</p>
                                         ) : (
                                             <p className="mt-1 text-xs text-gray-400">
-                                                格式：09 開頭，共 10 碼
+                                                格式：手機 (09) 或市話 (0x) 開頭，共 9~10 碼
                                             </p>
                                         )}
                                     </div>
